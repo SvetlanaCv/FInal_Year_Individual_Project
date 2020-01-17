@@ -43,6 +43,9 @@ import android.content.Context;
 import java.io.ByteArrayOutputStream;
 import android.provider.MediaStore.Images;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Vector;
+import java.lang.Object;
 
 public class MainActivity extends Activity implements OnTouchListener, CvCameraViewListener2 {
     private static final String  TAG              = "MainActivity";
@@ -127,21 +130,91 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Utils.bitmapToMat(bmp32, mat);
 
-        Mat saturated = new Mat();
+        Mat conv = hue_saturation(mat, 1, 1.25f);
+        Mat conv2 = brightness_contrast(conv, 1.2f, -30f);
 
-        double saturation = -25;
-        double scale = 1;
-
-        mat.convertTo(saturated, CvType.CV_8UC1, scale, saturation);
-
-        Mat imageContrastLow0_5 = new Mat();
-        saturated.convertTo(imageContrastLow0_5, -1, 0.8, 0);
-
-        Utils.matToBitmap(imageContrastLow0_5, bitmap);
+        Utils.matToBitmap(conv2, bitmap);
         createImageFromBitmap(bitmap);
+    }
 
-        //Intent filter = new Intent(this, MainActivity.class);
-        //startActivityForResult(filter, REMOVE_FILTER);
+    public static Mat brightness_contrast(Mat image, float a, float b){
+        Mat freshMat = new Mat();
+        image.convertTo(image, CvType.CV_8UC4, a);
+
+        Scalar scalar = new Scalar(b,b,b,b);
+        Core.add(image, scalar, freshMat);
+
+        return freshMat;
+    }
+
+    public static Mat hue_saturation(Mat image, float a, float b){
+        Mat freshMat = new Mat();
+        Imgproc.cvtColor(image,freshMat,Imgproc.COLOR_BGRA2BGR);
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(freshMat, channels);
+        channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, a);
+        channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, b);
+
+
+        Core.merge(channels, freshMat);
+        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_BGR2BGRA);
+
+        return freshMat;
+    }
+
+    public static Mat interpolation(float[] curve, float[] originalValue){
+        Mat lut = new Mat(1, 256, CvType.CV_8UC1);
+        for(int i=0; i<256; i++){
+            int j=0;
+            float a = i;
+            while (a>originalValue[j]){
+                j++;
+            }
+            if(a == originalValue[j]){
+                lut.put(1, i, curve[j]);
+                continue;
+            }
+            float slope = ((curve[j] - curve[j-1]))/((originalValue[j] - originalValue[j-1]));
+            float constant = curve[j] - slope * originalValue[j];
+            lut.put(1,i, (slope * a + constant));
+        }
+        return lut;
+    }
+
+    public static Mat SimplestColorBalance(Mat img, int percent) {
+        if (percent <= 0)
+            percent = 5;
+        img.convertTo(img, CvType.CV_32F);
+        List<Mat> channels = new ArrayList<>();
+        int rows = img.rows(); // number of rows of image
+        int cols = img.cols(); // number of columns of image
+        int chnls = img.channels(); //  number of channels of image
+        double halfPercent = percent / 200.0;
+        if (chnls == 3) Core.split(img, channels);
+        else channels.add(img);
+        List<Mat> results = new ArrayList<>();
+        for (int i = 0; i < chnls; i++) {
+            // find the low and high precentile values (based on the input percentile)
+            Mat flat = new Mat();
+            channels.get(i).reshape(1, 1).copyTo(flat);
+            Core.sort(flat, flat, Core.SORT_ASCENDING);
+            double lowVal = flat.get(0, (int) Math.floor(flat.cols() * halfPercent))[0];
+            double topVal = flat.get(0, (int) Math.ceil(flat.cols() * (1.0 - halfPercent)))[0];
+            // saturate below the low percentile and above the high percentile
+            Mat channel = channels.get(i);
+            for (int m = 0; m < rows; m++) {
+                for (int n = 0; n < cols; n++) {
+                    if (channel.get(m, n)[0] < lowVal) channel.put(m, n, lowVal);
+                    if (channel.get(m, n)[0] > topVal) channel.put(m, n, topVal);
+                }
+            }
+            Core.normalize(channel, channel, 0.0, 255.0 / 2, Core.NORM_MINMAX);
+            channel.convertTo(channel, CvType.CV_32F);
+            results.add(channel);
+        }
+        Mat outval = new Mat();
+        Core.merge(results, outval);
+        return outval;
     }
 
     public String createImageFromBitmap(Bitmap bitmap) {
