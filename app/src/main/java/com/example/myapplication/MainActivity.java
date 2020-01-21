@@ -1,8 +1,10 @@
 package com.example.myapplication;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
+import android.graphics.ImageDecoder;
 import android.media.Image;
 import android.net.Uri;
 
@@ -46,6 +48,15 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.lang.Object;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import android.os.Environment;
+import android.widget.TextView;
+
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public class MainActivity extends Activity implements OnTouchListener, CvCameraViewListener2 {
     private static final String  TAG              = "MainActivity";
@@ -60,11 +71,15 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
     private Scalar               CONTOUR_COLOR;
     private Button               selectPhoto;
     private Button               removeFilter;
+    private Button               testImage;
+    private Button               test;
     private ImageView            imageView;
+    private TextView             testResults;
     Uri                          imageUri;
+    Uri                          testUri;
 
     private static final int     PICK_IMAGE = 1;
-    private static final int     REMOVE_FILTER = 2;
+    private static final int     TEST = 2;
 
     private CameraBridgeViewBase mOpenCvCameraView;
 
@@ -100,16 +115,20 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
 
         setContentView(R.layout.activity_main);
 
+        testResults = findViewById(R.id.textView);
+
         imageView = findViewById(R.id.imageView);
         imageView.setImageResource(R.drawable.capture);
 
         selectPhoto = findViewById(R.id.button);
         removeFilter = findViewById(R.id.button2);
+        testImage = findViewById(R.id.button3);
+        test = findViewById(R.id.button4);
 
         selectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openGallery();
+                openGallery(PICK_IMAGE);
             }
         });
         removeFilter.setOnClickListener(new View.OnClickListener() {
@@ -118,10 +137,54 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                 removeFilter();
             }
         });
+        testImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openGallery(TEST);
+            }
+        });
+        test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                test();
+            }
+        });
+    }
 
-        //mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
-        //mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        //mOpenCvCameraView.setCvCameraViewListener(this);
+    private void test(){
+        Mat imageMat = new Mat();
+        Mat testMat = new Mat();
+        try {
+            InputStream image_stream = this.getContentResolver().openInputStream(testUri);
+            Bitmap testBitmap = BitmapFactory.decodeStream(image_stream);
+            BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
+            Bitmap imageBitmap = drawable.getBitmap();
+            Utils.bitmapToMat(imageBitmap, imageMat);
+            Utils.bitmapToMat(testBitmap, testMat);
+        }
+        catch( IOException e ){ }
+        int columns = imageMat.cols();
+        int rows = imageMat.rows();
+        double matching = 0.0;
+        double notMatching = 0.0;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < columns; j++){
+                double[] imagePixels = imageMat.get(i,j);
+                double[] testPixels = testMat.get(i,j);
+                if(imagePixels[0] <= testPixels[0]+25 &&
+                        imagePixels[0] >= testPixels[0]-25 &&
+                        imagePixels[1] <= testPixels[1]+25 &&
+                        imagePixels[1] >= testPixels[1]-25 &&
+                        imagePixels[2] <= testPixels[2]+25 &&
+                        imagePixels[2] >= testPixels[2]-25){
+                    matching++;
+                }
+                else notMatching++;
+            }
+        }
+        double total = matching + notMatching;
+        double percentage = (int) (matching/total * 100.0);
+        testResults.setText(percentage + "%");
     }
 
     private void removeFilter(){
@@ -130,33 +193,43 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Utils.bitmapToMat(bmp32, mat);
 
-        Mat conv = hue_saturation(mat, 1, 1.25f);
+        Mat conv = hue_saturation(mat, 1f, 1.25f);
         Mat conv2 = brightness_contrast(conv, 1.2f, -30f);
 
-        Utils.matToBitmap(conv2, bitmap);
+        //add cyan
+        Mat finalImg = new Mat();
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(conv2, channels);
+        channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, 1.25);
+        channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, 1.25);
+        Core.merge(channels, finalImg);
+
+        Utils.matToBitmap(finalImg, bitmap);
         createImageFromBitmap(bitmap);
     }
 
     public static Mat brightness_contrast(Mat image, float a, float b){
         Mat freshMat = new Mat();
-        image.convertTo(image, CvType.CV_8UC4, a);
+        Mat freshMat2 = new Mat();
+        image.convertTo(freshMat, CvType.CV_8UC4, a);
 
         Scalar scalar = new Scalar(b,b,b,b);
-        Core.add(image, scalar, freshMat);
+        Core.add(freshMat, scalar, freshMat2);
 
-        return freshMat;
+        return freshMat2;
     }
 
     public static Mat hue_saturation(Mat image, float a, float b){
         Mat freshMat = new Mat();
         Imgproc.cvtColor(image,freshMat,Imgproc.COLOR_BGRA2BGR);
+        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_BGR2HSV);
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(freshMat, channels);
         channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, a);
         channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, b);
 
-
         Core.merge(channels, freshMat);
+        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_HSV2BGR);
         Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_BGR2BGRA);
 
         return freshMat;
@@ -233,9 +306,10 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         return fileName;
     }
 
-    private void openGallery() {
+
+    private void openGallery(int num) {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        startActivityForResult(gallery, PICK_IMAGE);
+        startActivityForResult(gallery, num);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
@@ -245,22 +319,8 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                 imageUri = data.getData();
                 imageView.setImageURI(imageUri);
             }
-            else if(requestCode == REMOVE_FILTER){
-                /*Bitmap bitmap = data.getParcelableExtra("Bitmap");
-                imageView.setImageBitmap(bitmap);
-
-                Bitmap b = BitmapFactory.decodeByteArray(
-                        getIntent().getByteArrayExtra("byteArray"),0,getIntent().getByteArrayExtra("byteArray").length);
-                imageView.setImageBitmap(b);
-
-                try {
-                    Bitmap bitmap = BitmapFactory.decodeStream(this.openFileInput("myImage"));
-                    imageView.setImageBitmap(bitmap);
-                }
-                catch(FileNotFoundException e ){
-                    e.printStackTrace();
-                }
-                */
+            else if(requestCode == TEST){
+                testUri = data.getData();
             }
         }
     }
