@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.media.Image;
 import android.net.Uri;
@@ -76,7 +77,7 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
     private ImageView            imageView;
     private TextView             testResults;
     Uri                          imageUri;
-    Uri                          testUri;
+    Bitmap                       testBitmap;
 
     private static final int     PICK_IMAGE = 1;
     private static final int     TEST = 2;
@@ -154,15 +155,10 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
     private void test(){
         Mat imageMat = new Mat();
         Mat testMat = new Mat();
-        try {
-            InputStream image_stream = this.getContentResolver().openInputStream(testUri);
-            Bitmap testBitmap = BitmapFactory.decodeStream(image_stream);
-            BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
-            Bitmap imageBitmap = drawable.getBitmap();
-            Utils.bitmapToMat(imageBitmap, imageMat);
-            Utils.bitmapToMat(testBitmap, testMat);
-        }
-        catch( IOException e ){ }
+        BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
+        Bitmap imageBitmap = drawable.getBitmap();
+        Utils.bitmapToMat(imageBitmap, imageMat);
+        Utils.bitmapToMat(testBitmap, testMat);
         int columns = imageMat.cols();
         int rows = imageMat.rows();
         double matching = 0.0;
@@ -194,20 +190,31 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         Utils.bitmapToMat(bmp32, mat);
 
         Mat conv = hue_saturation(mat, 1f, 1.25f);
+
         Mat conv2 = brightness_contrast(conv, 1.2f, -30f);
 
-        //add cyan
-        Mat finalImg = new Mat();
-        ArrayList<Mat> channels = new ArrayList<>(3);
-        Core.split(conv2, channels);
-        channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, 1.25);
-        channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, 1.25);
-        Core.merge(channels, finalImg);
+        Imgproc.cvtColor(conv2, conv2, Imgproc.COLOR_RGBA2RGB);
 
-        Utils.matToBitmap(finalImg, bitmap);
-        createImageFromBitmap(bitmap);
+        double[] mask = {127, 187, 227};
+        Mat finalMat = apply_mask(conv2, mask, 5);
+
+        Utils.matToBitmap(finalMat, bitmap);
     }
 
+    public static Mat apply_mask(Mat image, double[] mask, int originalWeight){
+        int cols = image.cols();
+        int rows = image.rows();
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                double[] pixel = image.get(i,j);
+                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight+1),
+                                        (mask[1] + pixel[1] * originalWeight) / (originalWeight+1),
+                                            (mask[2] + pixel[2] * originalWeight) / (originalWeight+1)};
+                image.put(i, j, newPixel);
+            }
+        }
+        return image;
+    }
     public static Mat brightness_contrast(Mat image, float a, float b){
         Mat freshMat = new Mat();
         Mat freshMat2 = new Mat();
@@ -306,7 +313,6 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         return fileName;
     }
 
-
     private void openGallery(int num) {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, num);
@@ -318,9 +324,47 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
             if (requestCode == PICK_IMAGE) {
                 imageUri = data.getData();
                 imageView.setImageURI(imageUri);
+
+                Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+
+                int w = bitmap.getWidth();
+                int h = bitmap.getWidth();
+                if(w>1000){
+                    w = w/2;
+                    h = h/2;
+                }
+                else if(w>1500){
+                    w = w/3;
+                    h = h/3;
+                }
+                else if(w>2000){
+                    w = w/4;
+                    h = h/4;
+                }
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, w, h, false));
             }
             else if(requestCode == TEST){
-                testUri = data.getData();
+                try {
+                    InputStream image_stream = this.getContentResolver().openInputStream(data.getData());
+                    Bitmap bitmap = BitmapFactory.decodeStream(image_stream);
+                    int w = bitmap.getWidth();
+                    int h = bitmap.getWidth();
+                    if(w>1000){
+                        w = w/2;
+                        h = h/2;
+                    }
+                    else if(w>1500){
+                        w = w/3;
+                        h = h/3;
+                    }
+                    else if(w>2000){
+                        w = w/4;
+                        h = h/4;
+                    }
+                    testBitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
+
+                }
+                catch( FileNotFoundException e){}
             }
         }
     }
