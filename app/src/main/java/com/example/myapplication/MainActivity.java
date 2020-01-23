@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 import android.graphics.Color;
@@ -25,6 +26,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -55,34 +57,48 @@ import java.util.Date;
 import android.os.Environment;
 import android.widget.TextView;
 
+import com.zomato.photofilters.geometry.BezierSpline;
+import com.zomato.photofilters.geometry.Point;
+import com.zomato.photofilters.imageprocessors.ImageProcessor;
+import com.zomato.photofilters.imageprocessors.SubFilter;
+
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-public class MainActivity extends Activity implements OnTouchListener, CvCameraViewListener2 {
-    private static final String  TAG              = "MainActivity";
+public class MainActivity extends AppCompatActivity implements Serializable {
+    static {
+        System.loadLibrary("NativeImageProcessor");
+    }
+    private static final String TAG = "MainActivity";
 
-    private boolean              mIsColorSelected = false;
-    private Mat                  mRgba;
-    private Scalar               mBlobColorRgba;
-    private Scalar               mBlobColorHsv;
-    private ColorBlobDetector    mDetector;
-    private Mat                  mSpectrum;
-    private Size                 SPECTRUM_SIZE;
-    private Scalar               CONTOUR_COLOR;
-    private Button               selectPhoto;
-    private Button               removeFilter;
-    private Button               testImage;
-    private Button               test;
-    private ImageView            imageView;
-    private TextView             testResults;
-    Uri                          imageUri;
-    Bitmap                       testBitmap;
+    public class ImageData implements Serializable{
+        byte[] bmpArray;
 
-    private static final int     PICK_IMAGE = 1;
-    private static final int     TEST = 2;
+        ImageData(byte[] bitmap){
+            bmpArray = bitmap;
+        }
+    }
 
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private Button selectPhoto;
+    private Button removeFilter;
+    private Button testImage;
+    private Button test;
+    private ImageView imageView;
+    private TextView testResults;
+    Uri imageUri;
+    Bitmap testBitmap;
+    private Point[] rgbKnots;
+    private Point[] greenKnots;
+    private Point[] redKnots;
+    private Point[] blueKnots;
+    private int[] rgb;
+    private int[] r;
+    private int[] g;
+    private int[] b;
+
+    private static final int PICK_IMAGE = 1;
+    private static final int TEST = 2;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -91,8 +107,6 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                 case LoaderCallbackInterface.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
-                    //mOpenCvCameraView.enableView();
-                    //mOpenCvCameraView.setOnTouchListener(MainActivity.this);
                 } break;
                 default:
                 {
@@ -106,7 +120,6 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "called onCreate");
@@ -116,15 +129,15 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
 
         setContentView(R.layout.activity_main);
 
-        testResults = findViewById(R.id.textView);
+        //testResults = findViewById(R.id.textView);
 
-        imageView = findViewById(R.id.imageView);
-        imageView.setImageResource(R.drawable.capture);
+        //imageView = findViewById(R.id.imageView);
+        //imageView.setImageResource(R.drawable.capture);
 
         selectPhoto = findViewById(R.id.button);
-        removeFilter = findViewById(R.id.button2);
-        testImage = findViewById(R.id.button3);
-        test = findViewById(R.id.button4);
+        //removeFilter = findViewById(R.id.button2);
+        //testImage = findViewById(R.id.button3);
+        //test = findViewById(R.id.button4);
 
         selectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +145,7 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                 openGallery(PICK_IMAGE);
             }
         });
+        /*
         removeFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -150,113 +164,220 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                 test();
             }
         });
+        */
     }
 
-    private void test(){
+    private void test() {
         Mat imageMat = new Mat();
         Mat testMat = new Mat();
         BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
         Bitmap imageBitmap = drawable.getBitmap();
         Utils.bitmapToMat(imageBitmap, imageMat);
         Utils.bitmapToMat(testBitmap, testMat);
-        int columns = imageMat.cols();
-        int rows = imageMat.rows();
+
+        int percent = detect_contrast(imageMat);
+
+        int ImgCols = imageMat.cols();
+        int ImgRows = imageMat.rows();
+        int TestCols = testMat.cols();
+        int TestRows = testMat.rows();
+        int rows = 0;
+        int cols = 0;
+        if (ImgRows > TestRows) {
+            Size size = new Size(TestRows, TestCols);
+            rows = TestRows;
+            cols = TestCols;
+            Imgproc.resize(imageMat, imageMat, size);
+        } else {
+            Size size = new Size(ImgRows, ImgCols);
+            rows = ImgRows;
+            cols = ImgCols;
+            Imgproc.resize(testMat, testMat, size);
+        }
         double matching = 0.0;
         double notMatching = 0.0;
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < columns; j++){
-                double[] imagePixels = imageMat.get(i,j);
-                double[] testPixels = testMat.get(i,j);
-                if(imagePixels[0] <= testPixels[0]+25 &&
-                        imagePixels[0] >= testPixels[0]-25 &&
-                        imagePixels[1] <= testPixels[1]+25 &&
-                        imagePixels[1] >= testPixels[1]-25 &&
-                        imagePixels[2] <= testPixels[2]+25 &&
-                        imagePixels[2] >= testPixels[2]-25){
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double[] imagePixels = imageMat.get(i, j);
+                double[] testPixels = testMat.get(i, j);
+                if (imagePixels[0] <= testPixels[0] + 25 &&
+                        imagePixels[0] >= testPixels[0] - 25 &&
+                        imagePixels[1] <= testPixels[1] + 25 &&
+                        imagePixels[1] >= testPixels[1] - 25 &&
+                        imagePixels[2] <= testPixels[2] + 25 &&
+                        imagePixels[2] >= testPixels[2] - 25) {
                     matching++;
-                }
-                else notMatching++;
+                } else notMatching++;
             }
         }
         double total = matching + notMatching;
-        double percentage = (int) (matching/total * 100.0);
+        double percentage = (int) (matching / total * 100.0);
         testResults.setText(percentage + "%");
     }
 
-    private void removeFilter(){
-        Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+    private void removeFilter() {
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
         Mat mat = new Mat();
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Utils.bitmapToMat(bmp32, mat);
 
-        Mat conv = hue_saturation(mat, 1f, 1.25f);
-
+        Mat conv = hue_saturation(mat, 1f, 1.5f);
         Mat conv2 = brightness_contrast(conv, 1.2f, -30f);
 
+        /*
+        redKnots = new Point[4];
+        redKnots[0] = new Point(0, 0);
+        redKnots[1] = new Point(56, 68);
+        redKnots[2] = new Point(196, 206);
+        redKnots[3] = new Point(255, 255);
+
+        greenKnots = new Point[4];
+        greenKnots[0] = new Point(0, 0);
+        greenKnots[1] = new Point(46, 77);
+        greenKnots[2] = new Point(160, 200);
+        greenKnots[3] = new Point(255, 255);
+
+        blueKnots = new Point[4];
+        blueKnots[0] = new Point(0, 0);
+        blueKnots[1] = new Point(33, 86);
+        blueKnots[2] = new Point(126, 220);
+        blueKnots[3] = new Point(255, 255);
+
+        rgbKnots = new Point[2];
+        rgbKnots[0] = new Point(0, 0);
+        rgbKnots[1] = new Point(255, 255);
+
+        float[] x = {0, 128, 255};
+        float[] y = {0, 192, 255};
+
+        Mat a = interpolation(x, y);
+        Mat dst = new Mat();
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY);
+        Core.LUT(mat, a, dst);
+
         Imgproc.cvtColor(conv2, conv2, Imgproc.COLOR_RGBA2RGB);
-
-        double[] mask = {127, 187, 227};
+        double[] mask = {164, 158, 158};
         Mat finalMat = apply_mask(conv2, mask, 5);
+        */
 
-        Utils.matToBitmap(finalMat, bitmap);
+        Utils.matToBitmap(conv2, bitmap);
     }
 
-    public static Mat apply_mask(Mat image, double[] mask, int originalWeight){
+    public Bitmap process(Bitmap inputImage) {
+        rgbKnots = sortPointsOnXAxis(rgbKnots);
+        redKnots = sortPointsOnXAxis(redKnots);
+        greenKnots = sortPointsOnXAxis(greenKnots);
+        blueKnots = sortPointsOnXAxis(blueKnots);
+        if (rgb == null) {
+            rgb = BezierSpline.curveGenerator(rgbKnots);
+        }
+
+        if (r == null) {
+            r = BezierSpline.curveGenerator(redKnots);
+        }
+
+        if (g == null) {
+            g = BezierSpline.curveGenerator(greenKnots);
+        }
+
+        if (b == null) {
+            b = BezierSpline.curveGenerator(blueKnots);
+        }
+        return ImageProcessor.applyCurves(rgb, r, g, b, inputImage);
+    }
+
+    public Point[] sortPointsOnXAxis(Point[] points) {
+        if (points == null) {
+            return null;
+        }
+        for (int s = 1; s < points.length - 1; s++) {
+            for (int k = 0; k <= points.length - 2; k++) {
+                if (points[k].x > points[k + 1].x) {
+                    float temp = 0;
+                    temp = points[k].x;
+                    points[k].x = points[k + 1].x; //swapping values
+                    points[k + 1].x = temp;
+                }
+            }
+        }
+        return points;
+    }
+
+    public static int detect_contrast(Mat image) {
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2HSV);
+        int rows = image.rows();
+        int cols = image.cols();
+        double lo_hi = 0;
+        double mid = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double[] pixel = image.get(i, j);
+                if (pixel[2] > 180 || pixel[2] < 100) lo_hi++;
+                else mid++;
+            }
+        }
+        double val = (lo_hi) / (lo_hi + mid) * 100;
+        return (int) val;
+    }
+
+    public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
         int cols = image.cols();
         int rows = image.rows();
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < cols; j++){
-                double[] pixel = image.get(i,j);
-                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight+1),
-                                        (mask[1] + pixel[1] * originalWeight) / (originalWeight+1),
-                                            (mask[2] + pixel[2] * originalWeight) / (originalWeight+1)};
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double[] pixel = image.get(i, j);
+                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight + 1),
+                        (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1),
+                        (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1)};
                 image.put(i, j, newPixel);
             }
         }
         return image;
     }
-    public static Mat brightness_contrast(Mat image, float a, float b){
+
+    public static Mat brightness_contrast(Mat image, float a, float b) {
         Mat freshMat = new Mat();
         Mat freshMat2 = new Mat();
         image.convertTo(freshMat, CvType.CV_8UC4, a);
 
-        Scalar scalar = new Scalar(b,b,b,b);
+        Scalar scalar = new Scalar(b, b, b, b);
         Core.add(freshMat, scalar, freshMat2);
 
         return freshMat2;
     }
 
-    public static Mat hue_saturation(Mat image, float a, float b){
+    public static Mat hue_saturation(Mat image, float a, float b) {
         Mat freshMat = new Mat();
-        Imgproc.cvtColor(image,freshMat,Imgproc.COLOR_BGRA2BGR);
-        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(image, freshMat, Imgproc.COLOR_BGRA2BGR);
+        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2HSV);
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(freshMat, channels);
         channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, a);
         channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, b);
 
         Core.merge(channels, freshMat);
-        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_HSV2BGR);
-        Imgproc.cvtColor(freshMat,freshMat,Imgproc.COLOR_BGR2BGRA);
+        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_HSV2BGR);
+        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2BGRA);
 
         return freshMat;
     }
 
-    public static Mat interpolation(float[] curve, float[] originalValue){
+    public static Mat interpolation(float[] curve, float[] originalValue) {
         Mat lut = new Mat(1, 256, CvType.CV_8UC1);
-        for(int i=0; i<256; i++){
-            int j=0;
+        for (int i = 0; i < 256; i++) {
+            int j = 0;
             float a = i;
-            while (a>originalValue[j]){
+            while (a > originalValue[j]) {
                 j++;
             }
-            if(a == originalValue[j]){
+            if (a == originalValue[j]) {
                 lut.put(1, i, curve[j]);
                 continue;
             }
-            float slope = ((curve[j] - curve[j-1]))/((originalValue[j] - originalValue[j-1]));
+            float slope = ((curve[j] - curve[j - 1])) / ((originalValue[j] - originalValue[j - 1]));
             float constant = curve[j] - slope * originalValue[j];
-            lut.put(1,i, (slope * a + constant));
+            lut.put(1, i, (slope * a + constant));
         }
         return lut;
     }
@@ -317,64 +438,65 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, num);
     }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == PICK_IMAGE) {
-                imageUri = data.getData();
-                imageView.setImageURI(imageUri);
+                Uri imageUri = data.getData();
+                try {
+                    ImageDecoder.Source source = ImageDecoder.createSource(this.getContentResolver(), imageUri);
+                    Bitmap bitmap = ImageDecoder.decodeBitmap(source);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    Intent intent = new Intent(this, Main2Activity.class);
+                    intent.putExtra("image data", byteArray);
+                    startActivity(intent);
+                }
+                catch(IOException e){}
 
-                Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-
+                /*
                 int w = bitmap.getWidth();
                 int h = bitmap.getWidth();
-                if(w>1000){
-                    w = w/2;
-                    h = h/2;
-                }
-                else if(w>1500){
-                    w = w/3;
-                    h = h/3;
-                }
-                else if(w>2000){
-                    w = w/4;
-                    h = h/4;
+                if (w > 1000) {
+                    w = w / 2;
+                    h = h / 2;
+                } else if (w > 1500) {
+                    w = w / 3;
+                    h = h / 3;
+                } else if (w > 2000) {
+                    w = w / 4;
+                    h = h / 4;
+                } else if (w > 2500) {
+                    w = w / 5;
+                    h = h / 5;
                 }
                 imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, w, h, false));
-            }
-            else if(requestCode == TEST){
+                */
+            } else if (requestCode == TEST) {
                 try {
                     InputStream image_stream = this.getContentResolver().openInputStream(data.getData());
                     Bitmap bitmap = BitmapFactory.decodeStream(image_stream);
                     int w = bitmap.getWidth();
                     int h = bitmap.getWidth();
-                    if(w>1000){
-                        w = w/2;
-                        h = h/2;
-                    }
-                    else if(w>1500){
-                        w = w/3;
-                        h = h/3;
-                    }
-                    else if(w>2000){
-                        w = w/4;
-                        h = h/4;
+                    if (w > 1000) {
+                        w = w / 2;
+                        h = h / 2;
+                    } else if (w > 1500) {
+                        w = w / 3;
+                        h = h / 3;
+                    } else if (w > 2000) {
+                        w = w / 4;
+                        h = h / 4;
                     }
                     testBitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
 
+                } catch (FileNotFoundException e) {
                 }
-                catch( FileNotFoundException e){}
             }
         }
-    }
-
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
     }
 
     @Override
@@ -388,102 +510,5 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-    }
-
-    public void onDestroy() {
-        super.onDestroy();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
-    public void onCameraViewStarted(int width, int height) {
-        mRgba = new Mat(height, width, CvType.CV_8UC4);
-        mDetector = new ColorBlobDetector();
-        mSpectrum = new Mat();
-        mBlobColorRgba = new Scalar(255);
-        mBlobColorHsv = new Scalar(255);
-        SPECTRUM_SIZE = new Size(200, 64);
-        CONTOUR_COLOR = new Scalar(255,0,0,255);
-    }
-
-    public void onCameraViewStopped() {
-        mRgba.release();
-    }
-
-    public boolean onTouch(View v, MotionEvent event) {
-        int cols = mRgba.cols();
-        int rows = mRgba.rows();
-
-        int xOffset = (mOpenCvCameraView.getWidth() - cols) / 2;
-        int yOffset = (mOpenCvCameraView.getHeight() - rows) / 2;
-
-        int x = (int)event.getX() - xOffset;
-        int y = (int)event.getY() - yOffset;
-
-        Log.i(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
-
-        if ((x < 0) || (y < 0) || (x > cols) || (y > rows)) return false;
-
-        Rect touchedRect = new Rect();
-
-        touchedRect.x = (x>4) ? x-4 : 0;
-        touchedRect.y = (y>4) ? y-4 : 0;
-
-        touchedRect.width = (x+4 < cols) ? x + 4 - touchedRect.x : cols - touchedRect.x;
-        touchedRect.height = (y+4 < rows) ? y + 4 - touchedRect.y : rows - touchedRect.y;
-
-        Mat touchedRegionRgba = mRgba.submat(touchedRect);
-
-        Mat touchedRegionHsv = new Mat();
-        Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL);
-
-        // Calculate average color of touched region
-        mBlobColorHsv = Core.sumElems(touchedRegionHsv);
-        int pointCount = touchedRect.width*touchedRect.height;
-        for (int i = 0; i < mBlobColorHsv.val.length; i++)
-            mBlobColorHsv.val[i] /= pointCount;
-
-        mBlobColorRgba = converScalarHsv2Rgba(mBlobColorHsv);
-
-        Log.i(TAG, "Touched rgba color: (" + mBlobColorRgba.val[0] + ", " + mBlobColorRgba.val[1] +
-                ", " + mBlobColorRgba.val[2] + ", " + mBlobColorRgba.val[3] + ")");
-
-        mDetector.setHsvColor(mBlobColorHsv);
-
-        Imgproc.resize(mDetector.getSpectrum(), mSpectrum, SPECTRUM_SIZE, 0, 0, Imgproc.INTER_LINEAR_EXACT);
-
-        mIsColorSelected = true;
-
-        touchedRegionRgba.release();
-        touchedRegionHsv.release();
-
-        return false; // don't need subsequent touch events
-    }
-
-    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        mRgba = inputFrame.rgba();
-
-        if (mIsColorSelected) {
-            mDetector.process(mRgba);
-            List<MatOfPoint> contours = mDetector.getContours();
-            Log.e(TAG, "Contours count: " + contours.size());
-            Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
-
-            Mat colorLabel = mRgba.submat(4, 68, 4, 68);
-            colorLabel.setTo(mBlobColorRgba);
-
-            Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70, 70 + mSpectrum.cols());
-            mSpectrum.copyTo(spectrumLabel);
-        }
-
-        return mRgba;
-    }
-
-    private Scalar converScalarHsv2Rgba(Scalar hsvColor) {
-        Mat pointMatRgba = new Mat();
-        Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4);
-
-        return new Scalar(pointMatRgba.get(0, 0));
     }
 }
