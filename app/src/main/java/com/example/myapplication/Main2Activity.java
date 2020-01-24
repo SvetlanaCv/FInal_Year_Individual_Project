@@ -5,20 +5,41 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import com.example.myapplication.MainActivity.ImageData;
+import android.widget.TextView;
 
-public class Main2Activity extends AppCompatActivity {
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.Serializable;
+import java.util.LinkedList;
+import android.widget.Button;
+import android.os.Environment;
+
+import com.example.myapplication.MainActivity.ActivityOneData;
+
+import java.util.ListIterator;
+
+public class Main2Activity extends AppCompatActivity implements Serializable {
 
     private static final String TAG = "Main2Activity";
 
+    private Button continueButton;
     private ImageView imageView;
+    private TextView constrast;
+    private TextView saturation;
+    private static TextView results;
+    private LinkedList<String> filterList;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -45,12 +66,83 @@ public class Main2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         Intent i = getIntent();
-        byte[] stream = (byte[])i.getSerializableExtra("image data");
-        Bitmap bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.length);
+
+        Mat mat = new Mat();
+        String bitmapName = i.getStringExtra("image name");
+        //String path = Environment.getExternalStorageDirectory() + bitmapName + ".png";
+        //Bitmap bitmap = BitmapFactory.decodeFile(path);
+
         imageView = findViewById(R.id.imageView);
-        imageView.setImageBitmap(bitmap);
+        try {
+            Bitmap bitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
+            Utils.bitmapToMat(bitmap, mat);
+            imageView.setImageBitmap(bitmap);
+        }
+        catch( FileNotFoundException e){}
 
+        constrast = findViewById(R.id.textView);
+        saturation = findViewById(R.id.textView2);
+        results = findViewById(R.id.textView3);
 
+        int[] vals = detect_contrast_saturation(mat);
+
+        constrast.setText("Contrast: " + vals[0]);
+        saturation.setText("Saturation: " + vals[1]);
+
+        filterList = new LinkedList<>();
+
+        if (vals[0] > 0 && vals[1] > 0) filterList.push("Clarendon");
+
+        print_results(filterList);
+
+        continueButton = findViewById(R.id.button);
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                next_Screen(filterList);
+            }
+        });
+
+    }
+
+    public void next_Screen(LinkedList<String> list){
+        Intent intent = new Intent(this, Main3Activity.class);
+        intent.putExtra("filter list", list);
+        startActivity(intent);
+    }
+
+    public static void print_results(LinkedList<String> list){
+        String string = "";
+        while(list.size() > 0){
+            String filter =  list.pop();
+            if(list.size() > 0) string += ", ";
+            string += filter;
+
+        }
+        results.setText("Possible filters used:" + string);
+    }
+
+    public static int[] detect_contrast_saturation(Mat image) {
+        int[] val = new int[2];
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2HSV);
+        int rows = image.rows();
+        int cols = image.cols();
+        int totalPixels = rows * cols;
+        double saturationTotal = 0;
+        double lo_hi = 0;
+        double mid = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double[] pixel = image.get(i, j);
+                saturationTotal += pixel[1];
+                if (pixel[2] > 180 || pixel[2] < 100) lo_hi++;
+                else mid++;
+            }
+        }
+        val[0] = (int)((lo_hi) / (lo_hi + mid) * 100);
+        val[1] = (int)saturationTotal/totalPixels;
+        return val;
     }
 
     @Override

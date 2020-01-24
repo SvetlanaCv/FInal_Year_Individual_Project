@@ -67,15 +67,13 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements Serializable {
-    static {
-        System.loadLibrary("NativeImageProcessor");
-    }
+
     private static final String TAG = "MainActivity";
 
-    public class ImageData implements Serializable{
+    public class ActivityOneData implements Serializable{
         byte[] bmpArray;
 
-        ImageData(byte[] bitmap){
+        ActivityOneData(byte[] bitmap){
             bmpArray = bitmap;
         }
     }
@@ -166,7 +164,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         });
         */
     }
-
     private void test() {
         Mat imageMat = new Mat();
         Mat testMat = new Mat();
@@ -174,8 +171,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         Bitmap imageBitmap = drawable.getBitmap();
         Utils.bitmapToMat(imageBitmap, imageMat);
         Utils.bitmapToMat(testBitmap, testMat);
-
-        int percent = detect_contrast(imageMat);
 
         int ImgCols = imageMat.cols();
         int ImgRows = imageMat.rows();
@@ -301,24 +296,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             }
         }
         return points;
-    }
-
-    public static int detect_contrast(Mat image) {
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2HSV);
-        int rows = image.rows();
-        int cols = image.cols();
-        double lo_hi = 0;
-        double mid = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] pixel = image.get(i, j);
-                if (pixel[2] > 180 || pixel[2] < 100) lo_hi++;
-                else mid++;
-            }
-        }
-        double val = (lo_hi) / (lo_hi + mid) * 100;
-        return (int) val;
     }
 
     public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
@@ -449,10 +426,27 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                     ImageDecoder.Source source = ImageDecoder.createSource(this.getContentResolver(), imageUri);
                     Bitmap bitmap = ImageDecoder.decodeBitmap(source);
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    //bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byte[] byteArray = stream.toByteArray();
+
                     Intent intent = new Intent(this, Main2Activity.class);
-                    intent.putExtra("image data", byteArray);
+
+                    /*
+                    File file = this.getExternalFilesDir("imageBitmap" + ".png");
+                    FileOutputStream fOut = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 85, fOut);
+                    fOut.flush();
+                    fOut.close();
+                    */
+                    String filename = "image";
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                    FileOutputStream fo = openFileOutput(filename, Context.MODE_PRIVATE);
+                    fo.write(bytes.toByteArray());
+                    // remember close file output
+                    fo.close();
+
+                    intent.putExtra("image name", filename);
                     startActivity(intent);
                 }
                 catch(IOException e){}
