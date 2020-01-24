@@ -15,5 +15,6 @@ public class Main3Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main3);
         Intent i = getIntent();
         LinkedList<String> string = (LinkedList<String>)i.getSerializableExtra("filter list");
+        
     }
 }
