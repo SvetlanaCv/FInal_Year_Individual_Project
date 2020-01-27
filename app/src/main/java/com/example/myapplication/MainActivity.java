@@ -79,11 +79,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     }
 
     private Button selectPhoto;
-    private Button removeFilter;
-    private Button testImage;
-    private Button test;
-    private ImageView imageView;
-    private TextView testResults;
     Uri imageUri;
     Bitmap testBitmap;
     private Point[] rgbKnots;
@@ -127,15 +122,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
 
         setContentView(R.layout.activity_main);
 
-        //testResults = findViewById(R.id.textView);
-
-        //imageView = findViewById(R.id.imageView);
-        //imageView.setImageResource(R.drawable.capture);
-
         selectPhoto = findViewById(R.id.button);
-        //removeFilter = findViewById(R.id.button2);
-        //testImage = findViewById(R.id.button3);
-        //test = findViewById(R.id.button4);
 
         selectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,27 +130,8 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                 openGallery(PICK_IMAGE);
             }
         });
-        /*
-        removeFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                removeFilter();
-            }
-        });
-        testImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openGallery(TEST);
-            }
-        });
-        test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                test();
-            }
-        });
-        */
     }
+    /*
     private void test() {
         Mat imageMat = new Mat();
         Mat testMat = new Mat();
@@ -210,190 +178,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         testResults.setText(percentage + "%");
     }
 
-    private void removeFilter() {
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        Mat mat = new Mat();
-        Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Utils.bitmapToMat(bmp32, mat);
-
-        Mat conv = hue_saturation(mat, 1f, 1.5f);
-        Mat conv2 = brightness_contrast(conv, 1.2f, -30f);
-
-        /*
-        redKnots = new Point[4];
-        redKnots[0] = new Point(0, 0);
-        redKnots[1] = new Point(56, 68);
-        redKnots[2] = new Point(196, 206);
-        redKnots[3] = new Point(255, 255);
-
-        greenKnots = new Point[4];
-        greenKnots[0] = new Point(0, 0);
-        greenKnots[1] = new Point(46, 77);
-        greenKnots[2] = new Point(160, 200);
-        greenKnots[3] = new Point(255, 255);
-
-        blueKnots = new Point[4];
-        blueKnots[0] = new Point(0, 0);
-        blueKnots[1] = new Point(33, 86);
-        blueKnots[2] = new Point(126, 220);
-        blueKnots[3] = new Point(255, 255);
-
-        rgbKnots = new Point[2];
-        rgbKnots[0] = new Point(0, 0);
-        rgbKnots[1] = new Point(255, 255);
-
-        float[] x = {0, 128, 255};
-        float[] y = {0, 192, 255};
-
-        Mat a = interpolation(x, y);
-        Mat dst = new Mat();
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY);
-        Core.LUT(mat, a, dst);
-
-        Imgproc.cvtColor(conv2, conv2, Imgproc.COLOR_RGBA2RGB);
-        double[] mask = {164, 158, 158};
-        Mat finalMat = apply_mask(conv2, mask, 5);
-        */
-
-        Utils.matToBitmap(conv2, bitmap);
-    }
-
-    public Bitmap process(Bitmap inputImage) {
-        rgbKnots = sortPointsOnXAxis(rgbKnots);
-        redKnots = sortPointsOnXAxis(redKnots);
-        greenKnots = sortPointsOnXAxis(greenKnots);
-        blueKnots = sortPointsOnXAxis(blueKnots);
-        if (rgb == null) {
-            rgb = BezierSpline.curveGenerator(rgbKnots);
-        }
-
-        if (r == null) {
-            r = BezierSpline.curveGenerator(redKnots);
-        }
-
-        if (g == null) {
-            g = BezierSpline.curveGenerator(greenKnots);
-        }
-
-        if (b == null) {
-            b = BezierSpline.curveGenerator(blueKnots);
-        }
-        return ImageProcessor.applyCurves(rgb, r, g, b, inputImage);
-    }
-
-    public Point[] sortPointsOnXAxis(Point[] points) {
-        if (points == null) {
-            return null;
-        }
-        for (int s = 1; s < points.length - 1; s++) {
-            for (int k = 0; k <= points.length - 2; k++) {
-                if (points[k].x > points[k + 1].x) {
-                    float temp = 0;
-                    temp = points[k].x;
-                    points[k].x = points[k + 1].x; //swapping values
-                    points[k + 1].x = temp;
-                }
-            }
-        }
-        return points;
-    }
-
-    public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
-        int cols = image.cols();
-        int rows = image.rows();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] pixel = image.get(i, j);
-                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight + 1),
-                        (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1),
-                        (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1)};
-                image.put(i, j, newPixel);
-            }
-        }
-        return image;
-    }
-
-    public static Mat brightness_contrast(Mat image, float a, float b) {
-        Mat freshMat = new Mat();
-        Mat freshMat2 = new Mat();
-        image.convertTo(freshMat, CvType.CV_8UC4, a);
-
-        Scalar scalar = new Scalar(b, b, b, b);
-        Core.add(freshMat, scalar, freshMat2);
-
-        return freshMat2;
-    }
-
-    public static Mat hue_saturation(Mat image, float a, float b) {
-        Mat freshMat = new Mat();
-        Imgproc.cvtColor(image, freshMat, Imgproc.COLOR_BGRA2BGR);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2HSV);
-        ArrayList<Mat> channels = new ArrayList<>(3);
-        Core.split(freshMat, channels);
-        channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, a);
-        channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, b);
-
-        Core.merge(channels, freshMat);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_HSV2BGR);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2BGRA);
-
-        return freshMat;
-    }
-
-    public static Mat interpolation(float[] curve, float[] originalValue) {
-        Mat lut = new Mat(1, 256, CvType.CV_8UC1);
-        for (int i = 0; i < 256; i++) {
-            int j = 0;
-            float a = i;
-            while (a > originalValue[j]) {
-                j++;
-            }
-            if (a == originalValue[j]) {
-                lut.put(1, i, curve[j]);
-                continue;
-            }
-            float slope = ((curve[j] - curve[j - 1])) / ((originalValue[j] - originalValue[j - 1]));
-            float constant = curve[j] - slope * originalValue[j];
-            lut.put(1, i, (slope * a + constant));
-        }
-        return lut;
-    }
-
-    public static Mat SimplestColorBalance(Mat img, int percent) {
-        if (percent <= 0)
-            percent = 5;
-        img.convertTo(img, CvType.CV_32F);
-        List<Mat> channels = new ArrayList<>();
-        int rows = img.rows(); // number of rows of image
-        int cols = img.cols(); // number of columns of image
-        int chnls = img.channels(); //  number of channels of image
-        double halfPercent = percent / 200.0;
-        if (chnls == 3) Core.split(img, channels);
-        else channels.add(img);
-        List<Mat> results = new ArrayList<>();
-        for (int i = 0; i < chnls; i++) {
-            // find the low and high precentile values (based on the input percentile)
-            Mat flat = new Mat();
-            channels.get(i).reshape(1, 1).copyTo(flat);
-            Core.sort(flat, flat, Core.SORT_ASCENDING);
-            double lowVal = flat.get(0, (int) Math.floor(flat.cols() * halfPercent))[0];
-            double topVal = flat.get(0, (int) Math.ceil(flat.cols() * (1.0 - halfPercent)))[0];
-            // saturate below the low percentile and above the high percentile
-            Mat channel = channels.get(i);
-            for (int m = 0; m < rows; m++) {
-                for (int n = 0; n < cols; n++) {
-                    if (channel.get(m, n)[0] < lowVal) channel.put(m, n, lowVal);
-                    if (channel.get(m, n)[0] > topVal) channel.put(m, n, topVal);
-                }
-            }
-            Core.normalize(channel, channel, 0.0, 255.0 / 2, Core.NORM_MINMAX);
-            channel.convertTo(channel, CvType.CV_32F);
-            results.add(channel);
-        }
-        Mat outval = new Mat();
-        Core.merge(results, outval);
-        return outval;
-    }
 
     public String createImageFromBitmap(Bitmap bitmap) {
         String fileName = "myImage";//no .png or .jpg needed
@@ -409,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             fileName = null;
         }
         return fileName;
-    }
+    }*/
 
     private void openGallery(int num) {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);

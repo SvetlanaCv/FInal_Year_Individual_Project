@@ -39,7 +39,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     private TextView constrast;
     private TextView saturation;
     private static TextView results;
-    private LinkedList<String> filterList;
+    private static String[] stringArray;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -65,10 +65,10 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        Intent i = getIntent();
+        Intent intent = getIntent();
 
         Mat mat = new Mat();
-        String bitmapName = i.getStringExtra("image name");
+        final String bitmapName = intent.getStringExtra("image name");
         //String path = Environment.getExternalStorageDirectory() + bitmapName + ".png";
         //Bitmap bitmap = BitmapFactory.decodeFile(path);
 
@@ -89,36 +89,45 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         constrast.setText("Contrast: " + vals[0]);
         saturation.setText("Saturation: " + vals[1]);
 
-        filterList = new LinkedList<>();
+        LinkedList<String> filterList = new LinkedList<>();
 
+        //populate list
         if (vals[0] > 0 && vals[1] > 0) filterList.push("Clarendon");
 
-        print_results(filterList);
+        //convert to array
+        Object[] objectArray = filterList.toArray();
+        int length = objectArray.length;
+        stringArray = new String[length];
+        for(int i =0; i < length; i++) {
+            stringArray[i] = (String) objectArray[i];
+        }
+
+        print_results(stringArray);
 
         continueButton = findViewById(R.id.button);
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                next_Screen(filterList);
+                next_Screen(stringArray, bitmapName);
             }
         });
 
     }
 
-    public void next_Screen(LinkedList<String> list){
+    public void next_Screen(String[] list, String name){
         Intent intent = new Intent(this, Main3Activity.class);
         intent.putExtra("filter list", list);
+        intent.putExtra("bitmap name", name);
         startActivity(intent);
     }
 
-    public static void print_results(LinkedList<String> list){
+    public static void print_results(String[] list){
         String string = "";
-        while(list.size() > 0){
-            String filter =  list.pop();
-            if(list.size() > 0) string += ", ";
-            string += filter;
-
+        for(int i = 0; i<list.length-1;i++) {
+            string += list[i];
+            string += ", ";
         }
+        string += list[list.length-1];
         results.setText("Possible filters used:" + string);
     }
 
