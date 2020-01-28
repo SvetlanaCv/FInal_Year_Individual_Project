@@ -69,8 +69,6 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
 
         Mat mat = new Mat();
         final String bitmapName = intent.getStringExtra("image name");
-        //String path = Environment.getExternalStorageDirectory() + bitmapName + ".png";
-        //Bitmap bitmap = BitmapFactory.decodeFile(path);
 
         imageView = findViewById(R.id.imageView);
         try {
@@ -92,7 +90,10 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         LinkedList<String> filterList = new LinkedList<>();
 
         //populate list
-        if (vals[0] > 0 && vals[1] > 0) filterList.push("Clarendon");
+        if (vals[0] > 0 && vals[1] > 0) {
+            filterList.push("Clarendon");
+            filterList.push("Gingham");
+        }
 
         //convert to array
         Object[] objectArray = filterList.toArray();

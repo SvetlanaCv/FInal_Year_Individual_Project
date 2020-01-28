@@ -86,6 +86,7 @@ public class Main3Activity extends AppCompatActivity {
 
     public void removeFilter(String tag){
         if(tag.equals("Clarendon")) removeClarendon();
+        if(tag.equals("Gingham")) addGingham();
     }
 
     public void removeClarendon() {
@@ -94,7 +95,7 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
 
         Mat conv = hue_saturation(mat, 1f, .9f);
-        Mat conv2 = brightness_contrast(conv, .8f, 0f);
+        Mat conv2 = contrast_brightness(conv, .8f, 0f);
 
         /*
         redKnots = new Point[4];
@@ -136,8 +137,27 @@ public class Main3Activity extends AppCompatActivity {
         imageView.setImageBitmap(bitmap);
     }
 
+    public void addGingham(){
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
 
-    public static Mat brightness_contrast(Mat image, float a, float b) {
+        //Mat hsvMat = new Mat();
+        //Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV);
+
+        Mat conv = hue_saturation(mat, 1f, 1.3f);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+        Mat conv2 = contrast_brightness(conv, 1.2f, 30f);
+        double[] mask = {210,210,210};
+        Mat conv3 = apply_mask(conv2, mask, 4);
+
+        //double[] value = hsvMat.get(0,0);
+
+        Utils.matToBitmap(conv3, bitmap);
+        imageView.setImageBitmap(bitmap);
+    }
+
+    public static Mat contrast_brightness(Mat image, float a, float b) {
         Mat freshMat = new Mat();
         Mat freshMat2 = new Mat();
         image.convertTo(freshMat, CvType.CV_8UC4, a);
@@ -150,20 +170,32 @@ public class Main3Activity extends AppCompatActivity {
 
     public static Mat hue_saturation(Mat image, float a, float b) {
         Mat freshMat = new Mat();
-        Imgproc.cvtColor(image, freshMat, Imgproc.COLOR_BGRA2BGR);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(image, freshMat, Imgproc.COLOR_RGB2HSV);
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(freshMat, channels);
         channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, a);
         channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, b);
 
         Core.merge(channels, freshMat);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_HSV2BGR);
-        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_BGR2BGRA);
+        Imgproc.cvtColor(freshMat, freshMat, Imgproc.COLOR_HSV2RGB);
 
         return freshMat;
     }
 
+    public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
+        int cols = image.cols();
+        int rows = image.rows();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double[] pixel = image.get(i, j);
+                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight + 1),
+                        (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1),
+                        (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1)};
+                image.put(i, j, newPixel);
+            }
+        }
+        return image;
+    }
 /*
     public Bitmap process(Bitmap inputImage) {
         rgbKnots = sortPointsOnXAxis(rgbKnots);
@@ -203,21 +235,6 @@ public class Main3Activity extends AppCompatActivity {
             }
         }
         return points;
-    }
-
-    public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
-        int cols = image.cols();
-        int rows = image.rows();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] pixel = image.get(i, j);
-                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight + 1),
-                        (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1),
-                        (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1)};
-                image.put(i, j, newPixel);
-            }
-        }
-        return image;
     }
 
     public static Mat interpolation(float[] curve, float[] originalValue) {
