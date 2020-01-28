@@ -142,16 +142,11 @@ public class Main3Activity extends AppCompatActivity {
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
 
-        //Mat hsvMat = new Mat();
-        //Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV);
-
-        Mat conv = hue_saturation(mat, 1f, 1.3f);
+        Mat conv = hue_saturation(mat, 1f, 1.1f);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        Mat conv2 = contrast_brightness(conv, 1.2f, 30f);
+        Mat conv2 = contrast_brightness(conv, 1.1f, 10f);
         double[] mask = {210,210,210};
-        Mat conv3 = apply_mask(conv2, mask, 4);
-
-        //double[] value = hsvMat.get(0,0);
+        Mat conv3 = apply_mask(conv2, mask, 4, false);
 
         Utils.matToBitmap(conv3, bitmap);
         imageView.setImageBitmap(bitmap);
@@ -182,20 +177,38 @@ public class Main3Activity extends AppCompatActivity {
         return freshMat;
     }
 
-    public static Mat apply_mask(Mat image, double[] mask, int originalWeight) {
+    public static Mat apply_mask(Mat image, double[] mask, int originalWeight, boolean invert) {
         int cols = image.cols();
         int rows = image.rows();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 double[] pixel = image.get(i, j);
-                double[] newPixel = {(mask[0] + pixel[0] * originalWeight) / (originalWeight + 1),
-                        (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1),
-                        (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1)};
+                double[] newPixel = new double[3];
+                if(invert){
+                    double val = (mask[0] + pixel[0] * originalWeight) / (originalWeight + 1);
+                    if(val > pixel[0]) newPixel[0] = pixel[0] - (val - pixel[0]);
+                    else newPixel[0] = pixel[0] + (pixel[0] - val);
+
+                    val = (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1);
+                    if(val > pixel[1]) newPixel[1] = pixel[1] - (val - pixel[1]);
+                    else newPixel[1] = pixel[1] + (pixel[1] - val);
+
+                    val = (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1);
+                    if(val > pixel[2]) newPixel[2] = pixel[2] - (val - pixel[2]);
+                    else newPixel[2] = pixel[2] + (pixel[2] - val);
+                }
+                else {
+                    newPixel[0] = (mask[0] + pixel[0] * originalWeight) / (originalWeight + 1);
+                    newPixel[1] = (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1);
+                    newPixel[2] = (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1);
+                }
                 image.put(i, j, newPixel);
             }
         }
         return image;
     }
+
+
 /*
     public Bitmap process(Bitmap inputImage) {
         rgbKnots = sortPointsOnXAxis(rgbKnots);
