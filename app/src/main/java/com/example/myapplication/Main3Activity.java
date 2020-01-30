@@ -26,17 +26,22 @@ import android.graphics.Color;
 import android.view.View;
 
 import com.zomato.photofilters.geometry.BezierSpline;
-import com.zomato.photofilters.geometry.Point;
+import org.opencv.core.Point;
 import com.zomato.photofilters.imageprocessors.ImageProcessor;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgcodecs.Imgcodecs;
+
 
 public class Main3Activity extends AppCompatActivity {
 
     private ImageView imageView;
     Bitmap originalBitmap;
+    Button backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +52,14 @@ public class Main3Activity extends AppCompatActivity {
         String bitmapName = (String)intent.getSerializableExtra("bitmap name");
 
         imageView = findViewById(R.id.imageView2);
+
+        backButton = findViewById(R.id.button3);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                back();
+            }
+        });
 
         try {
             originalBitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
@@ -84,9 +97,27 @@ public class Main3Activity extends AppCompatActivity {
         }
     }
 
+    public void back(){
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     public void removeFilter(String tag){
         if(tag.equals("Clarendon")) removeClarendon();
         if(tag.equals("Gingham")) addGingham();
+        if(tag.equals("rgb hist")) showHist();
+    }
+
+    public void showHist(){
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+
+        Mat hist = hist(mat);
+        Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
+        Utils.matToBitmap(hist, bmp);
+        imageView.setImageBitmap(bmp);
     }
 
     public void removeClarendon() {
@@ -142,11 +173,11 @@ public class Main3Activity extends AppCompatActivity {
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
 
-        Mat conv = hue_saturation(mat, 1f, 1.1f);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        Mat conv2 = contrast_brightness(conv, 1.1f, 10f);
         double[] mask = {210,210,210};
-        Mat conv3 = apply_mask(conv2, mask, 4, false);
+        Mat conv = apply_mask(mat, mask, 4, true);
+        Mat conv2 = contrast_brightness(conv, .8f, 30f);
+        Mat conv3 = hue_saturation(conv2, 1f, 1.4f);
 
         Utils.matToBitmap(conv3, bitmap);
         imageView.setImageBitmap(bitmap);
@@ -177,30 +208,19 @@ public class Main3Activity extends AppCompatActivity {
         return freshMat;
     }
 
-    public static Mat apply_mask(Mat image, double[] mask, int originalWeight, boolean invert) {
+    public static Mat apply_mask(Mat image, double[] mask, int weight, boolean invert) {
         int cols = image.cols();
         int rows = image.rows();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 double[] pixel = image.get(i, j);
                 double[] newPixel = new double[3];
-                if(invert){
-                    double val = (mask[0] + pixel[0] * originalWeight) / (originalWeight + 1);
-                    if(val > pixel[0]) newPixel[0] = pixel[0] - (val - pixel[0]);
-                    else newPixel[0] = pixel[0] + (pixel[0] - val);
-
-                    val = (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1);
-                    if(val > pixel[1]) newPixel[1] = pixel[1] - (val - pixel[1]);
-                    else newPixel[1] = pixel[1] + (pixel[1] - val);
-
-                    val = (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1);
-                    if(val > pixel[2]) newPixel[2] = pixel[2] - (val - pixel[2]);
-                    else newPixel[2] = pixel[2] + (pixel[2] - val);
-                }
-                else {
-                    newPixel[0] = (mask[0] + pixel[0] * originalWeight) / (originalWeight + 1);
-                    newPixel[1] = (mask[1] + pixel[1] * originalWeight) / (originalWeight + 1);
-                    newPixel[2] = (mask[2] + pixel[2] * originalWeight) / (originalWeight + 1);
+                for(int c = 0; c < 3; c++) {
+                    if (invert) {
+                        newPixel[c] = (pixel[c] * (weight+1) - mask[c])/weight;
+                    } else {
+                        newPixel[c] = (mask[c] + pixel[c] * weight) / (weight + 1);
+                    }
                 }
                 image.put(i, j, newPixel);
             }
@@ -208,6 +228,39 @@ public class Main3Activity extends AppCompatActivity {
         return image;
     }
 
+    public Mat hist(Mat img) {
+        List<Mat> bgrPlanes = new ArrayList<>();
+        Core.split(img, bgrPlanes);
+        int histSize = 256;
+        float[] range = {0, 256};
+        MatOfFloat histRange = new MatOfFloat(range);
+        boolean accumulate = false;
+        Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
+        int histW = 512, histH = 400;
+        int binW = (int) Math.round((double) histW / histSize);
+        Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+        Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
+        bHist.get(0, 0, bHistData);
+        float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
+        gHist.get(0, 0, gHistData);
+        float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
+        rHist.get(0, 0, rHistData);
+        for( int i = 1; i < histSize; i++ ) {
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 0), 2);
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 2);
+        }
+        return histImage;
+    }
 
 /*
     public Bitmap process(Bitmap inputImage) {

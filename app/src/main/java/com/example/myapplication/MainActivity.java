@@ -79,19 +79,8 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     }
 
     private Button selectPhoto;
-    Uri imageUri;
-    Bitmap testBitmap;
-    private Point[] rgbKnots;
-    private Point[] greenKnots;
-    private Point[] redKnots;
-    private Point[] blueKnots;
-    private int[] rgb;
-    private int[] r;
-    private int[] g;
-    private int[] b;
 
     private static final int PICK_IMAGE = 1;
-    private static final int TEST = 2;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -131,69 +120,6 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             }
         });
     }
-    /*
-    private void test() {
-        Mat imageMat = new Mat();
-        Mat testMat = new Mat();
-        BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
-        Bitmap imageBitmap = drawable.getBitmap();
-        Utils.bitmapToMat(imageBitmap, imageMat);
-        Utils.bitmapToMat(testBitmap, testMat);
-
-        int ImgCols = imageMat.cols();
-        int ImgRows = imageMat.rows();
-        int TestCols = testMat.cols();
-        int TestRows = testMat.rows();
-        int rows = 0;
-        int cols = 0;
-        if (ImgRows > TestRows) {
-            Size size = new Size(TestRows, TestCols);
-            rows = TestRows;
-            cols = TestCols;
-            Imgproc.resize(imageMat, imageMat, size);
-        } else {
-            Size size = new Size(ImgRows, ImgCols);
-            rows = ImgRows;
-            cols = ImgCols;
-            Imgproc.resize(testMat, testMat, size);
-        }
-        double matching = 0.0;
-        double notMatching = 0.0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] imagePixels = imageMat.get(i, j);
-                double[] testPixels = testMat.get(i, j);
-                if (imagePixels[0] <= testPixels[0] + 25 &&
-                        imagePixels[0] >= testPixels[0] - 25 &&
-                        imagePixels[1] <= testPixels[1] + 25 &&
-                        imagePixels[1] >= testPixels[1] - 25 &&
-                        imagePixels[2] <= testPixels[2] + 25 &&
-                        imagePixels[2] >= testPixels[2] - 25) {
-                    matching++;
-                } else notMatching++;
-            }
-        }
-        double total = matching + notMatching;
-        double percentage = (int) (matching / total * 100.0);
-        testResults.setText(percentage + "%");
-    }
-
-
-    public String createImageFromBitmap(Bitmap bitmap) {
-        String fileName = "myImage";//no .png or .jpg needed
-        try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-            FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
-            fo.write(bytes.toByteArray());
-            // remember close file output
-            fo.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fileName = null;
-        }
-        return fileName;
-    }*/
 
     private void openGallery(int num) {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
@@ -209,19 +135,9 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                 try {
                     ImageDecoder.Source source = ImageDecoder.createSource(this.getContentResolver(), imageUri);
                     Bitmap bitmap = ImageDecoder.decodeBitmap(source);
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    //bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
 
                     Intent intent = new Intent(this, Main2Activity.class);
 
-                    /*
-                    File file = this.getExternalFilesDir("imageBitmap" + ".png");
-                    FileOutputStream fOut = new FileOutputStream(file);
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 85, fOut);
-                    fOut.flush();
-                    fOut.close();
-                    */
                     String filename = "image";
                     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -232,47 +148,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
 
                     intent.putExtra("image name", filename);
                     startActivity(intent);
-                }
-                catch(IOException e){}
-
-                /*
-                int w = bitmap.getWidth();
-                int h = bitmap.getWidth();
-                if (w > 1000) {
-                    w = w / 2;
-                    h = h / 2;
-                } else if (w > 1500) {
-                    w = w / 3;
-                    h = h / 3;
-                } else if (w > 2000) {
-                    w = w / 4;
-                    h = h / 4;
-                } else if (w > 2500) {
-                    w = w / 5;
-                    h = h / 5;
-                }
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, w, h, false));
-                */
-            } else if (requestCode == TEST) {
-                try {
-                    InputStream image_stream = this.getContentResolver().openInputStream(data.getData());
-                    Bitmap bitmap = BitmapFactory.decodeStream(image_stream);
-                    int w = bitmap.getWidth();
-                    int h = bitmap.getWidth();
-                    if (w > 1000) {
-                        w = w / 2;
-                        h = h / 2;
-                    } else if (w > 1500) {
-                        w = w / 3;
-                        h = h / 3;
-                    } else if (w > 2000) {
-                        w = w / 4;
-                        h = h / 4;
-                    }
-                    testBitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
-
-                } catch (FileNotFoundException e) {
-                }
+                } catch (IOException e) {}
             }
         }
     }
