@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -16,25 +16,19 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.Button;
-import android.graphics.Color;
 import android.view.View;
 
-import com.zomato.photofilters.geometry.BezierSpline;
 import org.opencv.core.Point;
-import com.zomato.photofilters.imageprocessors.ImageProcessor;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
-import org.opencv.imgcodecs.Imgcodecs;
 
 
 public class Main3Activity extends AppCompatActivity {
@@ -104,8 +98,24 @@ public class Main3Activity extends AppCompatActivity {
 
     public void removeFilter(String tag){
         if(tag.equals("Clarendon")) removeClarendon();
-        if(tag.equals("Gingham")) addGingham();
+        if(tag.equals("Gingham")) removeGingham();
         if(tag.equals("rgb hist")) showHist();
+        if(tag.equals("Nashville")) addNashville();
+    }
+
+    public void addNashville(){
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+        //Mat conv = contrast_brightness(mat, 1.2f, -40f);
+        //double[] mask = {250,217,173};
+        //Mat conv2 = apply_mask(conv, mask, 1, false);
+
+        Mat conv2 = changeChannel(mat, 0, 0, 0, 0, 133,35, true);
+
+        Utils.matToBitmap(conv2, bitmap);
+        imageView.setImageBitmap(bitmap);
     }
 
     public void showHist(){
@@ -128,47 +138,11 @@ public class Main3Activity extends AppCompatActivity {
         Mat conv = hue_saturation(mat, 1f, .9f);
         Mat conv2 = contrast_brightness(conv, .8f, 0f);
 
-        /*
-        redKnots = new Point[4];
-        redKnots[0] = new Point(0, 0);
-        redKnots[1] = new Point(56, 68);
-        redKnots[2] = new Point(196, 206);
-        redKnots[3] = new Point(255, 255);
-
-        greenKnots = new Point[4];
-        greenKnots[0] = new Point(0, 0);
-        greenKnots[1] = new Point(46, 77);
-        greenKnots[2] = new Point(160, 200);
-        greenKnots[3] = new Point(255, 255);
-
-        blueKnots = new Point[4];
-        blueKnots[0] = new Point(0, 0);
-        blueKnots[1] = new Point(33, 86);
-        blueKnots[2] = new Point(126, 220);
-        blueKnots[3] = new Point(255, 255);
-
-        rgbKnots = new Point[2];
-        rgbKnots[0] = new Point(0, 0);
-        rgbKnots[1] = new Point(255, 255);
-
-        float[] x = {0, 128, 255};
-        float[] y = {0, 192, 255};
-
-        Mat a = interpolation(x, y);
-        Mat dst = new Mat();
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY);
-        Core.LUT(mat, a, dst);
-
-        Imgproc.cvtColor(conv2, conv2, Imgproc.COLOR_RGBA2RGB);
-        double[] mask = {164, 158, 158};
-        Mat finalMat = apply_mask(conv2, mask, 5);
-        */
-
         Utils.matToBitmap(conv2, bitmap);
         imageView.setImageBitmap(bitmap);
     }
 
-    public void addGingham(){
+    public void removeGingham(){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
@@ -252,6 +226,9 @@ public class Main3Activity extends AppCompatActivity {
         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
         rHist.get(0, 0, rHistData);
         for( int i = 1; i < histSize; i++ ) {
+            Log.d("BlueValues", "Point:" + (i-1) + "  Val:" + Math.round(bHistData[i-1]));
+            Log.d("GreenValues", "Point:" + (i-1) + "  Val:" + Math.round(gHistData[i-1]));
+            Log.d("RedValues", "Point:" + (i-1) + "  Val:" + Math.round(rHistData[i-1]));
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
@@ -260,6 +237,36 @@ public class Main3Activity extends AppCompatActivity {
                     new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 2);
         }
         return histImage;
+    }
+
+    //in rgb form
+    public Mat changeChannel(Mat img, double in_r, double in_b, double in_g, double out_r, double out_b, double out_g, boolean flip){
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(img, channels);
+
+        double r_slope = (255 - out_r)/(255 - in_r);
+        double r_val = 255 - r_slope*255;
+        double g_slope =  (255 - out_g)/(255 - in_g);
+        double g_val = 255 - g_slope*255;
+        double b_slope =  (255 - out_b)/(255 - in_b);
+        double b_val = 255 - b_slope*255;
+
+        for(int i=0; i < img.rows(); i++){
+            for(int j=0; j < img.cols(); j++){
+                if(flip){
+                    channels.get(0).put(i, j, Math.max(0, (channels.get(0).get(i, j)[0]) - r_val)/r_slope);
+                    channels.get(1).put(i, j, Math.max(0, (channels.get(1).get(i, j)[0]) - g_val)/g_slope);
+                    channels.get(2).put(i, j, Math.max(0, (channels.get(2).get(i, j)[0]) - b_val)/b_slope);
+                }
+                else{
+                    channels.get(0).put(i, j, Math.max(0, r_slope * (channels.get(0).get(i, j)[0]) + r_val));
+                    channels.get(1).put(i, j, Math.max(0, g_slope * (channels.get(1).get(i, j)[0]) + g_val));
+                    channels.get(2).put(i, j, Math.max(0, b_slope * (channels.get(2).get(i, j)[0]) + b_val));
+                }
+            }
+        }
+        Core.merge(channels, img);
+        return img;
     }
 
 /*
@@ -359,3 +366,4 @@ public class Main3Activity extends AppCompatActivity {
     }
     */
 }
+

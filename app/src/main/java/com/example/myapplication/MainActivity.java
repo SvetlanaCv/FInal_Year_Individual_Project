@@ -57,11 +57,6 @@ import java.util.Date;
 import android.os.Environment;
 import android.widget.TextView;
 
-import com.zomato.photofilters.geometry.BezierSpline;
-import com.zomato.photofilters.geometry.Point;
-import com.zomato.photofilters.imageprocessors.ImageProcessor;
-import com.zomato.photofilters.imageprocessors.SubFilter;
-
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;

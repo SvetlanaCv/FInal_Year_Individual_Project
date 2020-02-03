@@ -82,19 +82,20 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         saturation = findViewById(R.id.textView2);
         results = findViewById(R.id.textView3);
 
-        int[] vals = detect_contrast_saturation(mat);
+        //int[] vals = detect_contrast_saturation(mat);
 
-        constrast.setText("Contrast: " + vals[0]);
-        saturation.setText("Saturation: " + vals[1]);
+        //constrast.setText("Contrast: " + vals[0]);
+        //saturation.setText("Saturation: " + vals[1]);
 
         LinkedList<String> filterList = new LinkedList<>();
 
         //populate list
-        if (vals[0] > 0 && vals[1] > 0) {
-            filterList.push("Clarendon");
-            filterList.push("Gingham");
-            filterList.push("rgb hist");
-        }
+        //if (vals[0] > 0 && vals[1] > 0) {
+        filterList.push("Clarendon");
+        filterList.push("Gingham");
+        filterList.push("rgb hist");
+        filterList.push("Nashville");
+        //}
 
         //convert to array
         Object[] objectArray = filterList.toArray();
