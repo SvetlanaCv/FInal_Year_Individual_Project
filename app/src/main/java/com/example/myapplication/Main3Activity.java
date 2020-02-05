@@ -30,6 +30,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 
+import java.util.TreeMap;
 
 public class Main3Activity extends AppCompatActivity {
 
@@ -108,13 +109,15 @@ public class Main3Activity extends AppCompatActivity {
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        //Mat conv = contrast_brightness(mat, 1.2f, -40f);
-        //double[] mask = {250,217,173};
-        //Mat conv2 = apply_mask(conv, mask, 1, false);
 
-        Mat conv2 = changeChannel(mat, 0, 0, 0, 0, 133,35, true);
+        Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
+        Mat conv2 = contrast_brightness(conv, 1.05f, 0f);
+        Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
+        Mat conv4 = contrast_brightness(conv3, 1.05f, 0f);
+        double[] mask = {250,223,182};
+        Mat conv5 = apply_mask(conv4, mask, 1, false);
 
-        Utils.matToBitmap(conv2, bitmap);
+        Utils.matToBitmap(conv5, bitmap);
         imageView.setImageBitmap(bitmap);
     }
 
