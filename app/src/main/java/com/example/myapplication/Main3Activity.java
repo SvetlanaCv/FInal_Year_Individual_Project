@@ -101,22 +101,22 @@ public class Main3Activity extends AppCompatActivity {
         if(tag.equals("Clarendon")) removeClarendon();
         if(tag.equals("Gingham")) removeGingham();
         if(tag.equals("rgb hist")) showHist();
-        if(tag.equals("Nashville")) addNashville();
+        if(tag.equals("Nashville")) removeNashville();
     }
 
-    public void addNashville(){
+    public void removeNashville(){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-
-        Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
-        Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
-        Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
+        
         double[] mask = {250,223,182};
-        Mat conv5 = apply_mask(conv3, mask, 1, false);
+        Mat conv = apply_mask(mat, mask, 1, true);
+        Mat conv2 = changeChannel(conv, 0, 88, 13, 0, 0,0, true);
+        Mat conv3 = contrast_brightness(conv2, .8f, 20f);
+        Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
 
-        Utils.matToBitmap(conv5, bitmap);
+        Utils.matToBitmap(conv4, bitmap);
         imageView.setImageBitmap(bitmap);
     }
 
