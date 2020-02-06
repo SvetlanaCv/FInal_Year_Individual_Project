@@ -111,11 +111,10 @@ public class Main3Activity extends AppCompatActivity {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
         Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
-        Mat conv2 = contrast_brightness(conv, 1.05f, 0f);
+        Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
         Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
-        Mat conv4 = contrast_brightness(conv3, 1.05f, 0f);
         double[] mask = {250,223,182};
-        Mat conv5 = apply_mask(conv4, mask, 1, false);
+        Mat conv5 = apply_mask(conv3, mask, 1, false);
 
         Utils.matToBitmap(conv5, bitmap);
         imageView.setImageBitmap(bitmap);
@@ -194,9 +193,9 @@ public class Main3Activity extends AppCompatActivity {
                 double[] newPixel = new double[3];
                 for(int c = 0; c < 3; c++) {
                     if (invert) {
-                        newPixel[c] = (pixel[c] * (weight+1) - mask[c])/weight;
+                        newPixel[c] = (pixel[c] * (255/mask[c]));
                     } else {
-                        newPixel[c] = (mask[c] + pixel[c] * weight) / (weight + 1);
+                        newPixel[c] = (pixel[c] * (mask[c]/255));
                     }
                 }
                 image.put(i, j, newPixel);
@@ -229,9 +228,9 @@ public class Main3Activity extends AppCompatActivity {
         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
         rHist.get(0, 0, rHistData);
         for( int i = 1; i < histSize; i++ ) {
-            Log.d("BlueValues", "Point:" + (i-1) + "  Val:" + Math.round(bHistData[i-1]));
-            Log.d("GreenValues", "Point:" + (i-1) + "  Val:" + Math.round(gHistData[i-1]));
-            Log.d("RedValues", "Point:" + (i-1) + "  Val:" + Math.round(rHistData[i-1]));
+            //Log.d("BlueValues", "Point:" + (i-1) + "  Val:" + Math.round(bHistData[i-1]));
+            //Log.d("GreenValues", "Point:" + (i-1) + "  Val:" + Math.round(gHistData[i-1]));
+            //Log.d("RedValues", "Point:" + (i-1) + "  Val:" + Math.round(rHistData[i-1]));
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
