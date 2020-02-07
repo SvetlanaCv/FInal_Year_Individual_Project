@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.graphics.ImageDecoder;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -30,12 +31,13 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 
-import java.util.TreeMap;
+import javax.xml.transform.Source;
 
 public class Main3Activity extends AppCompatActivity {
 
     private ImageView imageView;
     Bitmap originalBitmap;
+    Bitmap currentBitmap;
     Button backButton;
 
     @Override
@@ -59,6 +61,7 @@ public class Main3Activity extends AppCompatActivity {
         try {
             originalBitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
             Bitmap bitmap = originalBitmap;
+            currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
             imageView.setImageBitmap(bitmap);
         }
         catch( FileNotFoundException e){}
@@ -102,6 +105,12 @@ public class Main3Activity extends AppCompatActivity {
         if(tag.equals("Gingham")) removeGingham();
         if(tag.equals("rgb hist")) showHist();
         if(tag.equals("Nashville")) removeNashville();
+        if(tag.equals("Original")) showOriginal();
+    }
+
+    public void showOriginal(){
+        imageView.setImageBitmap(originalBitmap);
+        currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
     }
 
     public void removeNashville(){
@@ -109,19 +118,29 @@ public class Main3Activity extends AppCompatActivity {
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        
+
+        Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
+        Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
+        Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
+        double[] mask = {250,223,182};
+        Mat conv5 = apply_mask(conv3, mask, 1, false);
+        /*
         double[] mask = {250,223,182};
         Mat conv = apply_mask(mat, mask, 1, true);
         Mat conv2 = changeChannel(conv, 0, 88, 13, 0, 0,0, true);
-        Mat conv3 = contrast_brightness(conv2, .8f, 20f);
-        Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
+        //Mat conv3 = contrast_brightness(conv2, .8f, 20f);
+        //double[] thing = conv3.get(0,0);
+        //Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
+        // intthing = conv4.get(0,0);
+        */
 
-        Utils.matToBitmap(conv4, bitmap);
+        Utils.matToBitmap(conv, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
 
     public void showHist(){
-        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Bitmap bitmap = currentBitmap.copy(currentBitmap.getConfig(), true);
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
@@ -141,6 +160,7 @@ public class Main3Activity extends AppCompatActivity {
         Mat conv2 = contrast_brightness(conv, .8f, 0f);
 
         Utils.matToBitmap(conv2, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
 
@@ -156,6 +176,7 @@ public class Main3Activity extends AppCompatActivity {
         Mat conv3 = hue_saturation(conv2, 1f, 1.4f);
 
         Utils.matToBitmap(conv3, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
 
@@ -185,22 +206,19 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public static Mat apply_mask(Mat image, double[] mask, int weight, boolean invert) {
-        int cols = image.cols();
-        int rows = image.rows();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] pixel = image.get(i, j);
-                double[] newPixel = new double[3];
-                for(int c = 0; c < 3; c++) {
-                    if (invert) {
-                        newPixel[c] = (pixel[c] * (255/mask[c]));
-                    } else {
-                        newPixel[c] = (pixel[c] * (mask[c]/255));
-                    }
-                }
-                image.put(i, j, newPixel);
-            }
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(image, channels);
+        if(invert) {
+            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (255 / mask[0]));
+            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (255 / mask[1]));
+            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (255 / mask[2]));
         }
+        else{
+            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (mask[0]/255));
+            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (mask[1]/255));
+            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (mask[2]/255));
+        }
+        Core.merge(channels, image);
         return image;
     }
 
@@ -252,6 +270,31 @@ public class Main3Activity extends AppCompatActivity {
         double g_val = 255 - g_slope*255;
         double b_slope =  (255 - out_b)/(255 - in_b);
         double b_val = 255 - b_slope*255;
+
+        /*
+        if(flip) {
+            double thing[] = img.get(0,0);
+            Scalar scalar = new Scalar(r_val, g_val, b_val);
+            Core.subtract(img, scalar, img);
+            //Core.split(img, channels);
+            scalar = new Scalar(r_slope, g_slope, b_slope);
+            Core.divide(img, scalar, img);
+            thing = img.get(0,0);
+            int blip = 0;
+            //channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (1 / r_slope));
+            //channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (1 / g_slope));
+            //channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (1 / b_slope));
+        }
+        else{
+            Scalar scalar = new Scalar(r_val, g_val, b_val);
+            Core.add(img, scalar, img);
+            //Core.split(img, channels);
+            scalar = new Scalar(r_slope, g_slope, b_slope);
+            Core.multiply(img, scalar, img);
+            //channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, r_slope);
+            //channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, g_slope);
+            //channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, b_slope);
+        }*/
 
         for(int i=0; i < img.rows(); i++){
             for(int j=0; j < img.cols(); j++){
