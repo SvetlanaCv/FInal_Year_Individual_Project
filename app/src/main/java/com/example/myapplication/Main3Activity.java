@@ -119,22 +119,20 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
+        /*
         Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
         Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
         Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
         double[] mask = {250,223,182};
         Mat conv5 = apply_mask(conv3, mask, 1, false);
-        /*
+        */
         double[] mask = {250,223,182};
         Mat conv = apply_mask(mat, mask, 1, true);
         Mat conv2 = changeChannel(conv, 0, 88, 13, 0, 0,0, true);
-        //Mat conv3 = contrast_brightness(conv2, .8f, 20f);
-        //double[] thing = conv3.get(0,0);
-        //Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
-        // intthing = conv4.get(0,0);
-        */
+        Mat conv3 = contrast_brightness(conv2, .8f, 20f);
+        Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
 
-        Utils.matToBitmap(conv, bitmap);
+        Utils.matToBitmap(conv4, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
@@ -271,46 +269,93 @@ public class Main3Activity extends AppCompatActivity {
         double b_slope =  (255 - out_b)/(255 - in_b);
         double b_val = 255 - b_slope*255;
 
-        /*
         if(flip) {
-            double thing[] = img.get(0,0);
-            Scalar scalar = new Scalar(r_val, g_val, b_val);
-            Core.subtract(img, scalar, img);
-            //Core.split(img, channels);
-            scalar = new Scalar(r_slope, g_slope, b_slope);
-            Core.divide(img, scalar, img);
-            thing = img.get(0,0);
-            int blip = 0;
-            //channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (1 / r_slope));
-            //channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (1 / g_slope));
-            //channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (1 / b_slope));
-        }
-        else{
-            Scalar scalar = new Scalar(r_val, g_val, b_val);
-            Core.add(img, scalar, img);
-            //Core.split(img, channels);
-            scalar = new Scalar(r_slope, g_slope, b_slope);
-            Core.multiply(img, scalar, img);
-            //channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, r_slope);
-            //channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, g_slope);
-            //channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, b_slope);
-        }*/
+            if(r_val > 0) {
+                Scalar scalar = new Scalar(r_val);
+                Core.subtract(channels.get(0), scalar, channels.get(0));
+                scalar = new Scalar(1/r_slope);
+                Core.multiply(channels.get(0), scalar, channels.get(0));
+            }
+            else {
+                Scalar scalar = new Scalar(r_slope);
+                Core.divide(channels.get(0), scalar, channels.get(0));
+                scalar = new Scalar((r_val / r_slope));
+                Core.subtract(channels.get(0), scalar, channels.get(0));
+            }
 
-        for(int i=0; i < img.rows(); i++){
-            for(int j=0; j < img.cols(); j++){
-                if(flip){
-                    channels.get(0).put(i, j, Math.max(0, (channels.get(0).get(i, j)[0]) - r_val)/r_slope);
-                    channels.get(1).put(i, j, Math.max(0, (channels.get(1).get(i, j)[0]) - g_val)/g_slope);
-                    channels.get(2).put(i, j, Math.max(0, (channels.get(2).get(i, j)[0]) - b_val)/b_slope);
-                }
-                else{
-                    channels.get(0).put(i, j, Math.max(0, r_slope * (channels.get(0).get(i, j)[0]) + r_val));
-                    channels.get(1).put(i, j, Math.max(0, g_slope * (channels.get(1).get(i, j)[0]) + g_val));
-                    channels.get(2).put(i, j, Math.max(0, b_slope * (channels.get(2).get(i, j)[0]) + b_val));
-                }
+            if(g_val > 0) {
+                Scalar scalar = new Scalar(g_val);
+                Core.subtract(channels.get(1), scalar, channels.get(1));
+                scalar = new Scalar(1/g_slope);
+                Core.multiply(channels.get(1), scalar, channels.get(1));
+            }
+            else {
+                Scalar scalar = new Scalar(g_slope);
+                Core.divide(channels.get(1), scalar, channels.get(1));
+                scalar = new Scalar((g_val / g_slope));
+                Core.subtract(channels.get(1), scalar, channels.get(1));
+            }
+
+            if(b_val > 0) {
+                Scalar scalar = new Scalar(b_val);
+                Core.subtract(channels.get(2), scalar, channels.get(2));
+                scalar = new Scalar(1/b_slope);
+                Core.multiply(channels.get(2), scalar, channels.get(2));
+            }
+            else {
+                Scalar scalar = new Scalar(b_slope);
+                Core.divide(channels.get(2), scalar, channels.get(2));
+                scalar = new Scalar((b_val / b_slope));
+                Core.subtract(channels.get(2), scalar, channels.get(2));
             }
         }
-        Core.merge(channels, img);
+        else{
+            //these extensions are untested, may need work
+            if(r_slope<1) {
+                Scalar scalar = new Scalar(r_slope);
+                Core.multiply(channels.get(0), scalar, channels.get(0));
+                scalar = new Scalar(r_val);
+                Core.add(channels.get(0), scalar, channels.get(0));
+            }
+            else{
+                Scalar scalar = new Scalar(r_slope/2);
+                Core.multiply(channels.get(0), scalar, channels.get(0));
+                scalar = new Scalar(r_val/2);
+                Core.add(channels.get(0), scalar, channels.get(0));
+                scalar = new Scalar(2);
+                Core.multiply(channels.get(0), scalar, channels.get(0));
+            }
+
+            if(g_slope<1) {
+                Scalar scalar = new Scalar(g_slope);
+                Core.multiply(channels.get(1), scalar, channels.get(1));
+                scalar = new Scalar(g_val);
+                Core.add(channels.get(1), scalar, channels.get(1));
+            }
+            else{
+                Scalar scalar = new Scalar(g_slope/2);
+                Core.multiply(channels.get(1), scalar, channels.get(1));
+                scalar = new Scalar(g_val/2);
+                Core.add(channels.get(1), scalar, channels.get(1));
+                scalar = new Scalar(2);
+                Core.multiply(channels.get(1), scalar, channels.get(1));
+            }
+            if(b_slope<1) {
+                Scalar scalar = new Scalar(b_slope);
+                Core.multiply(channels.get(2), scalar, channels.get(2));
+                scalar = new Scalar(b_val);
+                Core.add(channels.get(2), scalar, channels.get(2));
+            }
+            else{
+                Scalar scalar = new Scalar(b_slope/2);
+                Core.multiply(channels.get(2), scalar, channels.get(2));
+                scalar = new Scalar(b_val/2);
+                Core.add(channels.get(2), scalar, channels.get(2));
+                scalar = new Scalar(2);
+                Core.multiply(channels.get(2), scalar, channels.get(2));
+            }
+            Core.merge(channels, img);
+        }
         return img;
     }
 
