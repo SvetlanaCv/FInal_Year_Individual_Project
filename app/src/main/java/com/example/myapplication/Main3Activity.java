@@ -33,11 +33,16 @@ import org.opencv.core.MatOfInt;
 
 import javax.xml.transform.Source;
 
+import java.io.FileOutputStream;
+import java.io.File;
+
 public class Main3Activity extends AppCompatActivity {
 
     private ImageView imageView;
     Bitmap originalBitmap;
     Bitmap currentBitmap;
+
+    Button save;
     Button backButton;
 
     @Override
@@ -55,6 +60,14 @@ public class Main3Activity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 back();
+            }
+        });
+
+        save = findViewById(R.id.save);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                save();
             }
         });
 
@@ -120,19 +133,25 @@ public class Main3Activity extends AppCompatActivity {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
         /*
+        //Imitate
         Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
         Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
         Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
         double[] mask = {250,223,182};
-        Mat conv5 = apply_mask(conv3, mask, 1, false);
-        */
-        double[] mask = {250,223,182};
-        Mat conv = apply_mask(mat, mask, 1, true);
-        Mat conv2 = changeChannel(conv, 0, 88, 13, 0, 0,0, true);
-        Mat conv3 = contrast_brightness(conv2, .8f, 20f);
-        Mat conv4 = changeChannel(conv3, 0, 0, 0, 0, 133,35, true);
+        Mat conv4 = apply_mask(conv3, mask, 1, false);
+        Mat conv5 = changeChannel(conv4, 0, 0, 0, 0, 50,0, false);
+         */
 
-        Utils.matToBitmap(conv4, bitmap);
+        //Reverse
+        //Mat conv = changeChannel(mat, 0, 0, 0, 0, 50,0, true);
+        double[] mask = {250,223,182};
+        Mat conv2 = apply_mask(mat, mask, 1, true);
+        Mat conv3 = changeChannel(conv2, 0, 0, 0, 0, 0,0, 207, 207, 182, true);
+        //Mat conv4 = contrast_brightness(conv3, .8f, 20f);
+        //Mat conv5 = changeChannel(conv4, 0, 0, 0, 0, 133,35, true);
+
+
+        Utils.matToBitmap(conv3, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
@@ -291,16 +310,16 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     //in rgb form
-    public Mat changeChannel(Mat img, double in_r, double in_b, double in_g, double out_r, double out_b, double out_g, boolean flip){
+    public Mat changeChannel(Mat img, double in_r, double in_b, double in_g, double out_r, double out_b, double out_g, double r_y, double g_y, double b_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
 
-        double r_slope = (255 - out_r)/(255 - in_r);
-        double r_val = 255 - r_slope*255;
-        double g_slope =  (255 - out_g)/(255 - in_g);
-        double g_val = 255 - g_slope*255;
-        double b_slope =  (255 - out_b)/(255 - in_b);
-        double b_val = 255 - b_slope*255;
+        double r_slope = (r_y - out_r)/(255 - in_r);
+        double r_val = r_y - r_slope*255;
+        double g_slope =  (g_y - out_g)/(255 - in_g);
+        double g_val = g_y - g_slope*255;
+        double b_slope =  (b_y - out_b)/(255 - in_b);
+        double b_val = b_y - b_slope*255;
 
         if(flip) {
             if (r_val > 0) {
@@ -389,6 +408,18 @@ public class Main3Activity extends AppCompatActivity {
         return img;
     }
 
+    public void save(){
+        File photoFile = new File(this.getExternalFilesDir(null), "Image" + ".jpg");
+        try {
+            FileOutputStream out = new FileOutputStream(photoFile);
+            Bitmap bitmap = currentBitmap;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 /*
     public Bitmap process(Bitmap inputImage) {
         rgbKnots = sortPointsOnXAxis(rgbKnots);
