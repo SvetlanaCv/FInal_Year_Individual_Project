@@ -92,7 +92,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         //populate list
         //if (vals[0] > 0 && vals[1] > 0) {
         filterList.push("Clarendon");
-        //filterList.push("Gingham");
+        filterList.push("Gingham");
         filterList.push("rgb hist");
         filterList.push("Nashville");
         filterList.push("Original");

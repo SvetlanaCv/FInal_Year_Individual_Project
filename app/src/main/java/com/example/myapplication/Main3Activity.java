@@ -155,10 +155,18 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
+        //Reverse
+        double[] red = {0, 1.2786, -.004691, 0.0000141, 0};
+        double[] green = {0.1364955, 1.24768, -0.006457, 0.00002566, -0.0000000164};
+        double[] blue = {0, 1.5749, -0.0109, .000034, 0};
+        mat = applyCubic(mat, red, green, blue);
+        /*
+        //Imitate
         double[] red = {0, 0.629, 0.0047, -0.0000127, 0};
         double[] green = {0, -1.03, 0.0423, -0.000244, 0.000000429};
         double[] blue = {0, -0.616, 0.03646, -.0002097, 0.000000359};
         mat = applyCubic(mat, red, green, blue);
+         */
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -184,10 +192,19 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+
+        /*
+        //Reverse
         double[] mask = {210,210,210};
         Mat conv = apply_mask(mat, mask, 4, true);
         Mat conv2 = contrast_brightness(conv, .8f, 30f);
         Mat conv3 = hue_saturation(conv2, 1f, 1.4f);
+        */
+        Mat conv = hue_saturation(mat, 1f, 1.3f);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+        Mat conv2 = contrast_brightness(conv, 1.2f, 30f);
+        double[] mask = {210,210,210};
+        Mat conv3 = apply_mask(conv2, mask, 1,false);
 
         Utils.matToBitmap(conv3, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
