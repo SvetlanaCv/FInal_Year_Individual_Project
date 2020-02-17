@@ -309,6 +309,7 @@ public class Main3Activity extends AppCompatActivity {
                 Core.subtract(channels.get(2), scalar, channels.get(2));
             }
         }
+        
         else{
             //these extensions are untested, may need work
             if(r_slope<1) {
