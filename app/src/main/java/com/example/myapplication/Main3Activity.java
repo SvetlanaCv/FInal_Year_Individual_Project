@@ -153,13 +153,29 @@ public class Main3Activity extends AppCompatActivity {
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
-        Mat conv = hue_saturation(mat, 1f, .9f);
-        Mat conv2 = contrast_brightness(conv, .8f, 0f);
+        double[] red = {0, 0.629, 0.0047, -0.0000127, 0};
+        double[] green = {0, -1.03, 0.0423, -0.000244, 0.000000429};
+        double[] blue = {0, -0.616, 0.03646, -.0002097, 0.000000359};
+        mat = applyCubic(mat, red, green, blue);
 
-        Utils.matToBitmap(conv2, bitmap);
+        Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+    }
+
+    public Mat applyCubic(Mat img, double[] red, double[] green, double[] blue){
+        for(int i = 0; i < img.rows(); i++){
+            for(int j = 0; j < img.cols(); j++){
+                double newRed = red[0] + red[1]*img.get(i,j)[0] + red[2]*img.get(i,j)[0]*img.get(i,j)[0] + red[3]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0] + red[4]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0];
+                double newGreen = green[0] + green[1]*img.get(i,j)[1] + green[2]*img.get(i,j)[1]*img.get(i,j)[1] + green[3]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1] + green[4]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1];
+                double newBlue = blue[0] + blue[1]*img.get(i,j)[2] + blue[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[3]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[4]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2];
+                double[] all = {newRed, newGreen, newBlue};
+                img.put(i,j, all);
+            }
+        }
+        return img;
     }
 
     public void removeGingham(){
@@ -270,46 +286,42 @@ public class Main3Activity extends AppCompatActivity {
         double b_val = 255 - b_slope*255;
 
         if(flip) {
-            if(r_val > 0) {
+            if (r_val > 0) {
                 Scalar scalar = new Scalar(r_val);
                 Core.subtract(channels.get(0), scalar, channels.get(0));
-                scalar = new Scalar(1/r_slope);
+                scalar = new Scalar(1 / r_slope);
                 Core.multiply(channels.get(0), scalar, channels.get(0));
-            }
-            else {
+            } else {
                 Scalar scalar = new Scalar(r_slope);
                 Core.divide(channels.get(0), scalar, channels.get(0));
                 scalar = new Scalar((r_val / r_slope));
                 Core.subtract(channels.get(0), scalar, channels.get(0));
             }
 
-            if(g_val > 0) {
+            if (g_val > 0) {
                 Scalar scalar = new Scalar(g_val);
                 Core.subtract(channels.get(1), scalar, channels.get(1));
-                scalar = new Scalar(1/g_slope);
+                scalar = new Scalar(1 / g_slope);
                 Core.multiply(channels.get(1), scalar, channels.get(1));
-            }
-            else {
+            } else {
                 Scalar scalar = new Scalar(g_slope);
                 Core.divide(channels.get(1), scalar, channels.get(1));
                 scalar = new Scalar((g_val / g_slope));
                 Core.subtract(channels.get(1), scalar, channels.get(1));
             }
 
-            if(b_val > 0) {
+            if (b_val > 0) {
                 Scalar scalar = new Scalar(b_val);
                 Core.subtract(channels.get(2), scalar, channels.get(2));
-                scalar = new Scalar(1/b_slope);
+                scalar = new Scalar(1 / b_slope);
                 Core.multiply(channels.get(2), scalar, channels.get(2));
-            }
-            else {
+            } else {
                 Scalar scalar = new Scalar(b_slope);
                 Core.divide(channels.get(2), scalar, channels.get(2));
                 scalar = new Scalar((b_val / b_slope));
                 Core.subtract(channels.get(2), scalar, channels.get(2));
             }
         }
-        
         else{
             //these extensions are untested, may need work
             if(r_slope<1) {
