@@ -78,8 +78,8 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         }
         catch( FileNotFoundException e){}
 
-        constrast = findViewById(R.id.textView);
-        saturation = findViewById(R.id.textView2);
+        //constrast = findViewById(R.id.textView);
+        //saturation = findViewById(R.id.textView2);
         results = findViewById(R.id.textView3);
 
         //int[] vals = detect_contrast_saturation(mat);
