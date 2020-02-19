@@ -283,7 +283,7 @@ public class Main3Activity extends AppCompatActivity {
         Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
         Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
         Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
-        int histW = 512, histH = 400;
+        int histW = 1024, histH = 800;
         int binW = (int) Math.round((double) histW / histSize);
         Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
         Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
@@ -296,9 +296,6 @@ public class Main3Activity extends AppCompatActivity {
         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
         rHist.get(0, 0, rHistData);
         for( int i = 1; i < histSize; i++ ) {
-            //Log.d("BlueValues", "Point:" + (i-1) + "  Val:" + Math.round(bHistData[i-1]));
-            //Log.d("GreenValues", "Point:" + (i-1) + "  Val:" + Math.round(gHistData[i-1]));
-            //Log.d("RedValues", "Point:" + (i-1) + "  Val:" + Math.round(rHistData[i-1]));
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
