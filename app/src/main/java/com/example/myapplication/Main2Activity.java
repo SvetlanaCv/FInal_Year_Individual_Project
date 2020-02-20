@@ -78,6 +78,9 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         Mat mat = new Mat();
         final String bitmapName = intent.getStringExtra("image name");
 
+        filterList.add("Original");
+        filterList.add("Gingham");
+
         imageView = findViewById(R.id.imageView);
         try {
             Bitmap bitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));

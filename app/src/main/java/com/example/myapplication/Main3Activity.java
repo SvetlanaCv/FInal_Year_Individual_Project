@@ -45,6 +45,8 @@ public class Main3Activity extends AppCompatActivity {
     Button save;
     Button backButton;
 
+    int n = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,6 +167,7 @@ public class Main3Activity extends AppCompatActivity {
         Mat hist = hist(mat);
         Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
         Utils.matToBitmap(hist, bmp);
+        currentBitmap = bmp;
         imageView.setImageBitmap(bmp);
     }
 
@@ -219,13 +222,13 @@ public class Main3Activity extends AppCompatActivity {
         Mat conv2 = contrast_brightness(conv, .8f, 30f);
         Mat conv3 = hue_saturation(conv2, 1f, 1.4f);
         */
-        Mat conv = hue_saturation(mat, 1f, 1.3f);
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        Mat conv2 = contrast_brightness(conv, 1.2f, 30f);
-        double[] mask = {210,210,210};
-        Mat conv3 = apply_mask(conv2, mask, 1,false);
+        /*
+        //Immitate
+        Mat conv = changeChannel(mat, 0, 0, 0, 31, 36, 39,200,200,212, false);
+        Mat conv2 = contrast_brightness(conv, 1, 30f);
+         */
 
-        Utils.matToBitmap(conv3, bitmap);
+        //Utils.matToBitmap(conv2, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
@@ -233,9 +236,9 @@ public class Main3Activity extends AppCompatActivity {
     public static Mat contrast_brightness(Mat image, float a, float b) {
         Mat freshMat = new Mat();
         Mat freshMat2 = new Mat();
-        image.convertTo(freshMat, CvType.CV_8UC4, a);
+        image.convertTo(freshMat, CvType.CV_8UC3, a);
 
-        Scalar scalar = new Scalar(b, b, b, b);
+        Scalar scalar = new Scalar(b, b, b);
         Core.add(freshMat, scalar, freshMat2);
 
         return freshMat2;
@@ -406,7 +409,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void save(){
-        File photoFile = new File(this.getExternalFilesDir(null), "Image" + ".jpg");
+        File photoFile = new File(this.getExternalFilesDir(null), "Image" + n + ".jpg");
         try {
             FileOutputStream out = new FileOutputStream(photoFile);
             Bitmap bitmap = currentBitmap;
@@ -416,6 +419,7 @@ public class Main3Activity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        n++;
     }
 /*
     public Bitmap process(Bitmap inputImage) {
