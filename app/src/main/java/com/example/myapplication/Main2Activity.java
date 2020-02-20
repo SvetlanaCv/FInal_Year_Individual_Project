@@ -79,7 +79,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         final String bitmapName = intent.getStringExtra("image name");
 
         filterList.add("Original");
-        filterList.add("Gingham");
+        filterList.add("Rise");
 
         imageView = findViewById(R.id.imageView);
         try {

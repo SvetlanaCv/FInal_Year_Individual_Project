@@ -30,6 +30,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Size;
 
 import javax.xml.transform.Source;
 
@@ -121,8 +122,32 @@ public class Main3Activity extends AppCompatActivity {
         if(tag.equals("rgb hist")) showHist();
         if(tag.equals("Nashville")) removeNashville();
         if(tag.equals("Original")) showOriginal();
+        if(tag.equals("Rise")) removeRise();
     }
 
+    public Mat vignette(Mat mat) {
+        Mat newMat = new Mat(mat.size(), mat.type(), new Scalar(0,0,0));
+        double maxDist = Math.sqrt(Math.pow((0 - newMat.cols() / 2), 2) + Math.pow((0 - newMat.rows() / 2), 2));
+        Point point = new Point(newMat.cols() / 2, newMat.rows() / 2);
+        for(int i = 0; i < maxDist; i+=2) {
+            Scalar colour = new Scalar(60-(i*.5), 60-(i*.5), 60-(i*.5));
+            for(int j = i; j < i+2; j++) {
+                Size size = new Size(maxDist - j, maxDist - j);
+                Imgproc.ellipse(newMat,
+                        point,
+                        size,
+                        0.0,
+                        0.0,
+                        360.0,
+                        colour,
+                        1,
+                        4,
+                        0);
+            }
+        }
+        return newMat;
+    }
+    
     public void showOriginal(){
         imageView.setImageBitmap(originalBitmap);
         currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
@@ -169,6 +194,22 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(hist, bmp);
         currentBitmap = bmp;
         imageView.setImageBitmap(bmp);
+    }
+
+    public void removeRise() {
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+
+        //Imitate
+        mat = changeChannel(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
+        Mat mask = vignette(mat);
+        Core.subtract(mat, mask, mat);
+
+        Utils.matToBitmap(mat, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+        imageView.setImageBitmap(bitmap);
     }
 
     public void removeClarendon() {
@@ -310,7 +351,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     //in rgb form
-    public Mat changeChannel(Mat img, double in_r, double in_b, double in_g, double out_r, double out_b, double out_g, double r_y, double g_y, double b_y, boolean flip){
+    public Mat changeChannel(Mat img, double in_r, double in_g, double in_b, double out_r, double out_g, double out_b, double r_y, double g_y, double b_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
 
@@ -421,6 +462,7 @@ public class Main3Activity extends AppCompatActivity {
         }
         n++;
     }
+
 /*
     public Bitmap process(Bitmap inputImage) {
         rgbKnots = sortPointsOnXAxis(rgbKnots);
