@@ -130,7 +130,8 @@ public class Main3Activity extends AppCompatActivity {
         double maxDist = Math.sqrt(Math.pow((0 - newMat.cols() / 2), 2) + Math.pow((0 - newMat.rows() / 2), 2));
         Point point = new Point(newMat.cols() / 2, newMat.rows() / 2);
         for(int i = 0; i < maxDist; i+=2) {
-            Scalar colour = new Scalar(60-(i*.5), 60-(i*.5), 60-(i*.5));
+            double val = (60)-i*(60/maxDist);
+            Scalar colour = new Scalar(val, val, val);
             for(int j = i; j < i+2; j++) {
                 Size size = new Size(maxDist - j, maxDist - j);
                 Imgproc.ellipse(newMat,
@@ -147,7 +148,7 @@ public class Main3Activity extends AppCompatActivity {
         }
         return newMat;
     }
-    
+
     public void showOriginal(){
         imageView.setImageBitmap(originalBitmap);
         currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
@@ -202,10 +203,17 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
+        //Reverse
+        Mat mask = vignette(mat);
+        Core.add(mat, mask, mat);
+        mat = changeChannel(mat, 72, 53, 43, 0, 0, 0, 230, 213, 220, false);
+
+        /*
         //Imitate
-        mat = changeChannel(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
+        //mat = changeChannel(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
         Mat mask = vignette(mat);
         Core.subtract(mat, mask, mat);
+        */
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
