@@ -171,15 +171,16 @@ public class Main3Activity extends AppCompatActivity {
          */
 
         //Reverse
-        //Mat conv = changeChannel(mat, 0, 0, 0, 0, 50,0, true);
-        double[] mask = {250,223,182};
-        Mat conv2 = apply_mask(mat, mask, 1, true);
-        Mat conv3 = changeChannel(conv2, 0, 0, 0, 0, 0,0, 207, 207, 182, true);
-        //Mat conv4 = contrast_brightness(conv3, .8f, 20f);
-        //Mat conv5 = changeChannel(conv4, 0, 0, 0, 0, 133,35, true);
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(mat, channels);
 
+        Imgproc.equalizeHist( channels.get(0), channels.get(0) );
+        Imgproc.equalizeHist( channels.get(1), channels.get(1) );
+        Imgproc.equalizeHist( channels.get(2), channels.get(2) );
 
-        Utils.matToBitmap(conv3, bitmap);
+        Core.merge(channels, mat);
+        
+        Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
