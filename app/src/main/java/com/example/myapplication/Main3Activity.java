@@ -34,6 +34,8 @@ import org.opencv.core.Size;
 
 import javax.xml.transform.Source;
 
+import com.example.myapplication.HistData;
+
 import java.io.FileOutputStream;
 import java.io.File;
 
@@ -171,18 +173,32 @@ public class Main3Activity extends AppCompatActivity {
          */
 
         //Reverse
-        ArrayList<Mat> channels = new ArrayList<>(3);
-        Core.split(mat, channels);
+        HistData data = new HistData(mat);
+        int g_count = 0;
+        for(int i = 0; i < 10; i++){ if(data.g_val_rgb[i] > 50) g_count ++; }
+        if(g_count >= 5) mat = equalize(mat, true, true, true);
+        else {
+            double[] mask = {250,223,182};
+            mat = apply_mask(mat, mask, 1, true);
+            mat = changeChannel(mat,0,0,0,0,0,0,255,255,205, false);
+        }
+        Utils.matToBitmap(mat, bitmap);
 
-        Imgproc.equalizeHist( channels.get(0), channels.get(0) );
-        Imgproc.equalizeHist( channels.get(1), channels.get(1) );
-        Imgproc.equalizeHist( channels.get(2), channels.get(2) );
-
-        Core.merge(channels, mat);
-        
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+    }
+
+    public Mat equalize(Mat img, boolean red, boolean green, boolean blue){
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(img, channels);
+
+        if(red) Imgproc.equalizeHist( channels.get(0), channels.get(0) );
+        if(green) Imgproc.equalizeHist( channels.get(1), channels.get(1) );
+        if(blue) Imgproc.equalizeHist( channels.get(2), channels.get(2) );
+
+        Core.merge(channels, img);
+        return img;
     }
 
     public void showHist(){
@@ -360,16 +376,16 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     //in rgb form
-    public Mat changeChannel(Mat img, double in_r, double in_g, double in_b, double out_r, double out_g, double out_b, double r_y, double g_y, double b_y, boolean flip){
+    public Mat changeChannel(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
 
-        double r_slope = (r_y - out_r)/(255 - in_r);
-        double r_val = r_y - r_slope*255;
-        double g_slope =  (g_y - out_g)/(255 - in_g);
-        double g_val = g_y - g_slope*255;
-        double b_slope =  (b_y - out_b)/(255 - in_b);
-        double b_val = b_y - b_slope*255;
+        double r_slope = (r_p2_y - r_p1_y)/(255 - r_p1_x);
+        double r_val = r_p2_y - r_slope*255;
+        double g_slope =  (g_p2_y - g_p1_y)/(255 - g_p1_x);
+        double g_val = g_p2_y - g_slope*255;
+        double b_slope =  (b_p2_y - b_p1_y)/(255 - b_p1_x);
+        double b_val = b_p2_y - b_slope*255;
 
         if(flip) {
             if (r_val > 0) {
