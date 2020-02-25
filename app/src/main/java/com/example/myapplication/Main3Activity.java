@@ -173,16 +173,7 @@ public class Main3Activity extends AppCompatActivity {
          */
 
         //Reverse
-        HistData data = new HistData(mat);
-        int g_count = 0;
-        for(int i = 0; i < 10; i++){ if(data.g_val_rgb[i] > 50) g_count ++; }
-        if(g_count >= 5) mat = equalize(mat, true, true, true);
-        else {
-            double[] mask = {250,223,182};
-            mat = apply_mask(mat, mask, 1, true);
-            mat = changeChannel(mat,0,0,0,0,0,0,255,255,205, false);
-        }
-        Utils.matToBitmap(mat, bitmap);
+        mat = equaliseHistManual(mat, 0,0,60,256,240,210);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
