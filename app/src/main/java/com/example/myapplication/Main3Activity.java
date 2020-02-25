@@ -281,20 +281,28 @@ public class Main3Activity extends AppCompatActivity {
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
-        /*
         //Reverse
-        double[] mask = {210,210,210};
-        Mat conv = apply_mask(mat, mask, 4, true);
-        Mat conv2 = contrast_brightness(conv, .8f, 30f);
-        Mat conv3 = hue_saturation(conv2, 1f, 1.4f);
-        */
+        HistData data = new HistData(mat);
+
+        double r_in = data.r_in_rgb;
+        double g_in = data.g_in_rgb;
+        double b_in = data.b_in_rgb;
+        double r_out = data.r_out_rgb;
+        double g_out = data.g_out_rgb;
+        double b_out = data.b_out_rgb;
+
+        if(data.r_out_rgb<200 || data.g_out_rgb<200 || data.b_out_rgb<200) r_out = 200; g_out = 200; b_out = 200;
+        if(data.r_in_rgb>50 || data.g_in_rgb>50 || data.b_in_rgb>50) r_in = 30; g_in = 30; b_in = 20;
+
+        mat = equaliseHistManual(mat, r_in, g_in, b_in, r_out, g_out, b_out);
+
         /*
         //Immitate
         Mat conv = changeChannel(mat, 0, 0, 0, 31, 36, 39,200,200,212, false);
         Mat conv2 = contrast_brightness(conv, 1, 30f);
          */
 
-        //Utils.matToBitmap(conv2, bitmap);
+        Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
     }
@@ -373,6 +381,33 @@ public class Main3Activity extends AppCompatActivity {
                     new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 2);
         }
         return histImage;
+    }
+
+    public Mat equaliseHistManual(Mat img, double red_in, double green_in, double blue_in, double red_out, double green_out, double blue_out){
+        double red_low_ratio = 128/(128-red_in);
+        double red_high_ratio = 128/(red_out-128);
+        double green_low_ratio = 128/(128-green_in);
+        double green_high_ratio = 128/(green_out-128);
+        double blue_low_ratio = 128/(128-blue_in);
+        double blue_high_ratio = 128/(blue_out-128);
+
+        for(int i = 0; i < img.rows(); i++){
+            for(int j = 0; j <img.cols(); j++){
+                double[] pixel = img.get(i,j);
+                double[] newPixel = new double[3];
+                if(pixel[0]==200 || pixel[1]==200 || pixel[2]==200){
+                    int thing = 0;
+                }
+                if(pixel[0] < 128){ newPixel[0] = (128-(128 - pixel[0])*red_low_ratio); }
+                else if(pixel[0] > 128){ newPixel[0] = (128+(pixel[0]-128)*red_high_ratio); }
+                if(pixel[1] < 128){ newPixel[1] = (128-(128 - pixel[1])*green_low_ratio); }
+                else if(pixel[1] > 128){ newPixel[1] = (128+(pixel[1]-128)*green_high_ratio); }
+                if(pixel[2] < 128){ newPixel[2] = (128-(128 - pixel[2])*blue_low_ratio); }
+                else if(pixel[2] > 128){ newPixel[2] = (128+(pixel[2]-128)*blue_high_ratio); }
+                img.put(i,j, newPixel);
+            }
+        }
+        return img;
     }
 
     //in rgb form
@@ -487,7 +522,6 @@ public class Main3Activity extends AppCompatActivity {
         }
         n++;
     }
-
 /*
     public Bitmap process(Bitmap inputImage) {
         rgbKnots = sortPointsOnXAxis(rgbKnots);
