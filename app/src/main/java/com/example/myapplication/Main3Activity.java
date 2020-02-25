@@ -214,7 +214,8 @@ public class Main3Activity extends AppCompatActivity {
         //Reverse
         Mat mask = vignette(mat);
         Core.add(mat, mask, mat);
-        mat = changeChannel(mat, 72, 53, 43, 0, 0, 0, 230, 213, 220, false);
+        mat = equaliseHistManual(mat, 30, 30,30,256,256,256);
+        mat = changeChannel(mat, 0,0,0,0,0,0,  255,255,220, 255,255,255, false);
 
         /*
         //Imitate
@@ -402,16 +403,16 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     //in rgb form
-    public Mat changeChannel(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
+    public Mat changeChannel(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_x, double g_p2_x, double b_p2_x, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
 
-        double r_slope = (r_p2_y - r_p1_y)/(255 - r_p1_x);
-        double r_val = r_p2_y - r_slope*255;
-        double g_slope =  (g_p2_y - g_p1_y)/(255 - g_p1_x);
-        double g_val = g_p2_y - g_slope*255;
-        double b_slope =  (b_p2_y - b_p1_y)/(255 - b_p1_x);
-        double b_val = b_p2_y - b_slope*255;
+        double r_slope = (r_p2_y - r_p1_y)/(r_p2_x - r_p1_x);
+        double r_val = r_p2_y - r_slope*r_p2_x;
+        double g_slope =  (g_p2_y - g_p1_y)/(g_p2_x - g_p1_x);
+        double g_val = g_p2_y - g_slope*g_p2_x;
+        double b_slope =  (b_p2_y - b_p1_y)/(b_p2_x - b_p1_x);
+        double b_val = b_p2_y - b_slope*b_p2_x;
 
         if(flip) {
             if (r_val > 0) {
