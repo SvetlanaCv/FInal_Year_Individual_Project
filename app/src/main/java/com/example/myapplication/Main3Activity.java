@@ -126,6 +126,28 @@ public class Main3Activity extends AppCompatActivity {
         if(tag.equals("Original")) showOriginal();
         if(tag.equals("Rise")) removeRise();
         if(tag.equals("Crema")) removeCrema();
+        if(tag.equals("Perpetua")) removePerpetua();
+    }
+
+    public void removePerpetua(){
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+
+        //Imitate
+        //mat = changeChannel(mat, 30, 0, 30, 0,0,0,255,255,255,255,255,255,false);
+        //mat = contrast_brightness(mat,1f, 20f);
+        double[] red = {15, -0.387, 0.023, -0.000116, .00000018};
+        double[] green = {15, 0.851, 0.003488, -0.000013, 0};
+        double[] blue = {18, 0.49, 0.0051, -.0000133, 0};
+        mat = applyCubic(mat, red, green, blue);
+
+        //Reverse
+
+        Utils.matToBitmap(mat, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+        imageView.setImageBitmap(bitmap);
     }
 
     public void removeCrema(){

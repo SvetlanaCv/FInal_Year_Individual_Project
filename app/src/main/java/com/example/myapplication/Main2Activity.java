@@ -66,7 +66,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
 
         filterList.add("Original");
         filterList.add("rgb hist");
-        filterList.add("Crema");
+        filterList.add("Perpetua");
 
         imageView = findViewById(R.id.imageView);
         try {
