@@ -125,6 +125,29 @@ public class Main3Activity extends AppCompatActivity {
         if(tag.equals("Nashville")) removeNashville();
         if(tag.equals("Original")) showOriginal();
         if(tag.equals("Rise")) removeRise();
+        if(tag.equals("Crema")) removeCrema();
+    }
+
+    public void removeCrema(){
+        Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+
+        /*
+        //Imitate
+        mat = changeChannel(mat, 0,0,0, 35, 0,0,230, 255,255,255,255,255,false);
+        mat = hue_saturation(mat, 1f,0.7f);
+        mat = changeChannel(mat, 0,0,0, 0, 0,0,255, 255,255,230,240,240,false);
+        */
+
+        //Reverse
+        mat = hue_saturation(mat, 1f, 1.3f);
+        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,220, 230,255, false);
+
+        Utils.matToBitmap(mat, bitmap);
+        currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+        imageView.setImageBitmap(bitmap);
     }
 
     public Mat vignette(Mat mat) {
