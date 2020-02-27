@@ -135,15 +135,19 @@ public class Main3Activity extends AppCompatActivity {
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
+        /*
         //Imitate
-        //mat = changeChannel(mat, 30, 0, 30, 0,0,0,255,255,255,255,255,255,false);
-        //mat = contrast_brightness(mat,1f, 20f);
         double[] red = {15, -0.387, 0.023, -0.000116, .00000018};
         double[] green = {15, 0.851, 0.003488, -0.000013, 0};
         double[] blue = {18, 0.49, 0.0051, -.0000133, 0};
         mat = applyCubic(mat, red, green, blue);
+         */
 
         //Reverse
+        double[] red = {0, 0.289, 0.0332, -0.000256, .000000539};
+        double[] green = {0, 0.289, 0.0332, -0.000256, .000000539};
+        double[] blue = {0, 0.289, 0.0332, -0.000256, .000000539};
+        mat = applyCubic(mat, red, green, blue);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
