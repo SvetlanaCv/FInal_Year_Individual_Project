@@ -65,15 +65,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
 
     private static final String TAG = "MainActivity";
 
-    public class ActivityOneData implements Serializable{
-        byte[] bmpArray;
-
-        ActivityOneData(byte[] bitmap){
-            bmpArray = bitmap;
-        }
-    }
-
-    private Button selectPhoto;
+    private Button selectPhoto, test;
 
     private static final int PICK_IMAGE = 1;
 
@@ -107,13 +99,25 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         setContentView(R.layout.activity_main);
 
         selectPhoto = findViewById(R.id.button);
-
         selectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openGallery(PICK_IMAGE);
             }
         });
+
+        test = findViewById(R.id.test);
+        test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                analysisScreen();
+            }
+        });
+    }
+
+    private void analysisScreen(){
+        Intent i = new Intent(this, AnalysisScreen.class);
+        startActivity(i);
     }
 
     private void openGallery(int num) {

@@ -102,8 +102,9 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     public void detection(Mat img) {
         HistData data = new HistData(img);
 
+        /*
         //Gingham, RGB
-        if (data.r_val_rgb[0] <= 5 && data.r_val_rgb[9] <= 5 && data.g_val_rgb[0] <= 5 && data.g_val_rgb[9] <= 5 && data.b_val_rgb[0] <= 5 && data.b_val_rgb[9] <= 35 && data.r_out_rgb <= 235 && data.b_out_rgb <= 235 && data.g_out_rgb <= 235 && data.r_in_rgb >= 15 && data.g_in_rgb >= 15 && data.b_in_rgb >= 15) filterList.add("Gingham");
+        if (data.r_val_rgb[0] <= 5 && data.r_val_rgb[9] <= 5 && data.g_val_rgb[0] <= 5 && data.g_val_rgb[9] <= 5 && data.b_val_rgb[0] <= 5 && data.b_val_rgb[9] <= 35 && data.out_rgb[0] <= 235 && data.out_rgb[2] <= 235 && data.out_rgb[1] <= 235 && data.in_rgb[0] >= 15 && data.in_rgb[2] >= 15 && data.in_rgb[2] >= 15) filterList.add("Gingham");
         else {
             //Nashville, RGB
             if (data.b_val_rgb[0] < 10 && data.b_val_rgb[1] < 30 && data.b_val_rgb[9] < 10)
@@ -115,7 +116,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
                 filterList.add("Clarendon");
 
             //Perpetua, RGB & HSV
-            if (data.g_in_rgb > 5 && Math.round(data.bHistDataRgb[255]) < 100 && Math.round(data.rHistDataRgb[0]) < 5 && Math.round(data.gHistDataRgb[0]) < 5 && Math.round(data.bHistDataRgb[0]) < 300
+            if (data.in_rgb[2] > 5 && Math.round(data.bHistDataRgb[255]) < 100 && Math.round(data.rHistDataRgb[0]) < 5 && Math.round(data.gHistDataRgb[0]) < 5 && Math.round(data.bHistDataRgb[0]) < 300
                     && data.r_in_hsv > 5 && data.g_in_hsv < 10 && Math.round(data.rHistDataHsv[0]) == 0 && Math.round(data.gHistDataHsv[0]) < 150
                     && data.g_val_hsv[8] < 50 && data.g_val_hsv[9] < 40 && data.b_val_hsv[7] < 40 && data.b_val_hsv[6] < 45 && data.b_val_hsv[5] < 35)
                 filterList.add("Perpetua");
@@ -129,8 +130,9 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
             if (Math.round(data.rHistDataHsv[0]) < 5 && Math.round(data.gHistDataHsv[0]) < 200 && Math.round(data.gHistDataHsv[255]) < 50 && data.r_val_hsv[0] < 10 && data.r_in_hsv > 5 && data.g_val_hsv[8] < 40 && data.g_val_hsv[9] <= 5
                     && Math.round(data.rHistDataRgb[0]) <= 0 && Math.round(data.bHistDataRgb[0]) < 50)
                 filterList.add("Rise");
-
         }
+
+         */
     }
 
     public void next_Screen(String[] list, String name){

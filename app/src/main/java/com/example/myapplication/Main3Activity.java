@@ -325,15 +325,15 @@ public class Main3Activity extends AppCompatActivity {
         //Reverse
         HistData data = new HistData(mat);
 
-        double r_in = data.r_in_rgb;
-        double g_in = data.g_in_rgb;
-        double b_in = data.b_in_rgb;
-        double r_out = data.r_out_rgb;
-        double g_out = data.g_out_rgb;
-        double b_out = data.b_out_rgb;
+        double r_in = data.in_rgb[0];
+        double g_in = data.in_rgb[1];
+        double b_in = data.in_rgb[2];
+        double r_out = data.out_rgb[0];
+        double g_out = data.out_rgb[1];
+        double b_out = data.out_rgb[2];
 
-        if(data.r_out_rgb<200 || data.g_out_rgb<200 || data.b_out_rgb<200) r_out = 200; g_out = 200; b_out = 200;
-        if(data.r_in_rgb>50 || data.g_in_rgb>50 || data.b_in_rgb>50) r_in = 30; g_in = 30; b_in = 20;
+        if(data.out_rgb[0]<200 || data.out_rgb[1]<200 || data.out_rgb[2]<200) r_out = 200; g_out = 200; b_out = 200;
+        if(data.in_rgb[0]>50 || data.in_rgb[1]>50 || data.in_rgb[2]>50) r_in = 30; g_in = 30; b_in = 20;
 
         mat = equaliseHistManual(mat, r_in, g_in, b_in, r_out, g_out, b_out);
 
