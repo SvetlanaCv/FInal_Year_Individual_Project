@@ -1,53 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
-    <!--<org.opencv.android.JavaCameraView
-        android:id="@+id/color_blob_detection_activity_surface_view"
-        android:layout_width="match_parent"
-        android:layout_height="413dp" />
-        -->
+    <Button
+        android:id="@+id/button"
+        android:layout_width="265dp"
+        android:layout_height="151dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginBottom="0dp"
+        android:background="#30AA30"
+        android:text="Select Photo"
+        android:textSize="30dp" />
 
+    <Button
+        android:id="@+id/analysis"
+        android:layout_width="147dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="50dp"
+        android:width="300dp"
+        android:height="100dp"
+        android:background="#AAAAAA"
+        android:text="Analysis"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/test"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <Button
+        android:id="@+id/test"
+        android:layout_width="98dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:width="300dp"
+        android:height="100dp"
+        android:background="#AAAAAA"
+        android:text="Test"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/analysis"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="265dp"
-            android:layout_height="151dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="44dp"
-            android:layout_marginLeft="44dp"
-            android:layout_marginBottom="274dp"
-            android:width="300dp"
-            android:height="100dp"
-            android:background="#30AA30"
-            android:text="Select Photo"
-            android:textSize="30dp" />
-
-        <Button
-            android:id="@+id/test"
-            android:layout_width="233dp"
-            android:layout_height="66dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="97dp"
-            android:layout_marginLeft="97dp"
-            android:layout_marginBottom="42dp"
-            android:width="300dp"
-            android:height="100dp"
-            android:background="#AAAAAA"
-            android:text="Test Screen"
-            android:textSize="30dp" />
-
-    </RelativeLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
