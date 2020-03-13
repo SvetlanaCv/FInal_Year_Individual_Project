@@ -102,37 +102,80 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     public void detection(Mat img) {
         HistData data = new HistData(img);
 
-        /*
-        //Gingham, RGB
-        if (data.r_val_rgb[0] <= 5 && data.r_val_rgb[9] <= 5 && data.g_val_rgb[0] <= 5 && data.g_val_rgb[9] <= 5 && data.b_val_rgb[0] <= 5 && data.b_val_rgb[9] <= 35 && data.out_rgb[0] <= 235 && data.out_rgb[2] <= 235 && data.out_rgb[1] <= 235 && data.in_rgb[0] >= 15 && data.in_rgb[2] >= 15 && data.in_rgb[2] >= 15) filterList.add("Gingham");
-        else {
-            //Nashville, RGB
-            if (data.b_val_rgb[0] < 10 && data.b_val_rgb[1] < 30 && data.b_val_rgb[9] < 10)
-                filterList.add("Nashville");
+        if(checkGingham(data)) filterList.add("Gingham");
+        if(checkNashville(data)) filterList.add("Nashville");
+        if(checkClarendon(data)) filterList.add("Clarendon");
+        if(checkPerpetua(data)) filterList.add("Perpetua");
+        if(checkCrema(data)) filterList.add("Crema");
+        if(checkRise(data))filterList.add("Rise");
+    }
 
-            //Clarendon, RGB & HSV
-            if (Math.round(data.rHistDataRgb[255]) < 120 && Math.round(data.gHistDataRgb[0]) < 100
-                    && Math.round(data.rHistDataHsv[0]) < 100 && data.b_val_hsv[5] < 50 && data.b_val_hsv[6] < 40 && data.b_val_hsv[7] < 25)
-                filterList.add("Clarendon");
+    private boolean checkPerpetua(HistData data){
+        boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25;
+        boolean rgb_start = data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300;
+        boolean rgb_end = data.HistDataRgb[2][255] < 60;
+        boolean rgb_val = data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400;
+        boolean hsv_popIn = data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150;
+        boolean hsv_end = data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1;
+        boolean hsv_vals = data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15;
+        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_popIn && hsv_start && hsv_end && hsv_vals;
+    }
 
-            //Perpetua, RGB & HSV
-            if (data.in_rgb[2] > 5 && Math.round(data.bHistDataRgb[255]) < 100 && Math.round(data.rHistDataRgb[0]) < 5 && Math.round(data.gHistDataRgb[0]) < 5 && Math.round(data.bHistDataRgb[0]) < 300
-                    && data.r_in_hsv > 5 && data.g_in_hsv < 10 && Math.round(data.rHistDataHsv[0]) == 0 && Math.round(data.gHistDataHsv[0]) < 150
-                    && data.g_val_hsv[8] < 50 && data.g_val_hsv[9] < 40 && data.b_val_hsv[7] < 40 && data.b_val_hsv[6] < 45 && data.b_val_hsv[5] < 35)
-                filterList.add("Perpetua");
+    private boolean checkCrema(HistData data){
+        boolean rgb_popOut = data.out_rgb[2] <= 250;
+        boolean rgb_start = data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250;
+        boolean rgb_end = data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1;
+        boolean rgb_val = data.b_val_rgb[9] < 80;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700;
+        boolean hsv_end = data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250;
+        boolean hsv_val = data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200;
+        return rgb_popOut && rgb_start && rgb_end && rgb_val && hsv_start && hsv_end && hsv_val;
+    }
 
-            //Crema, HSV & RGB
-            if (data.g_val_hsv[9] <= 30 && data.g_val_hsv[8] <= 30 && data.g_val_hsv[7] < 100 && Math.round(data.rHistDataHsv[0]) < 5 && Math.round(data.gHistDataHsv[0]) < 400 && Math.round(data.rHistDataHsv[255]) < 100 && Math.round(data.gHistDataHsv[255]) < 100
-                    && Math.round(data.gHistDataRgb[255]) < 50 && Math.round(data.bHistDataRgb[255]) <= 1)
-                filterList.add("Crema");
+    private boolean checkRise(HistData data){
+        boolean rgb_popIn = data.in_rgb[0] > 5 && data.in_rgb[1] > 5;
+        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15;
+        boolean rgb_end = data.HistDataRgb[2][255] < 50;
+        boolean rgb_val = data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50;
+        boolean hsv_in = data.in_hsv[0] > 10 && data.in_hsv[2] == 0;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1;
+        boolean hsv_end = data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1;
+        boolean hsv_val = data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400;
+        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_in && hsv_start && hsv_end && hsv_val;
+    }
 
-            //Rise, HSV && RGB
-            if (Math.round(data.rHistDataHsv[0]) < 5 && Math.round(data.gHistDataHsv[0]) < 200 && Math.round(data.gHistDataHsv[255]) < 50 && data.r_val_hsv[0] < 10 && data.r_in_hsv > 5 && data.g_val_hsv[8] < 40 && data.g_val_hsv[9] <= 5
-                    && Math.round(data.rHistDataRgb[0]) <= 0 && Math.round(data.bHistDataRgb[0]) < 50)
-                filterList.add("Rise");
-        }
+    private boolean checkClarendon(HistData data){
+        boolean rgb_start = data.HistDataRgb[1][0] < 200;
+        boolean rgb_end = data.HistDataRgb[0][255] < 600;
+        boolean hsv_popOut = data.out_hsv[0] > 220 && data.out_hsv[1] > 200;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1;
+        boolean hsv_vals = data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100;
+        return rgb_start && rgb_end && hsv_popOut && hsv_start && hsv_vals;
+    }
 
-         */
+    private boolean checkNashville(HistData data){
+        boolean rgb_popIn = data.in_rgb[0] < 10;
+        boolean rgb_popOut = data.out_rgb[1] < 250;
+        boolean rgb_start = data.HistDataRgb[2][0] < 1;
+        boolean rgb_end = data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5;
+        boolean rgb_vals = data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5;
+        boolean hsv_vals = data.b_val_hsv[2] < 200;
+        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals;
+    }
+
+    private boolean checkGingham(HistData data){
+        boolean rgb_popIn = data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10;
+        boolean hsv_popIn = data.in_hsv[0] > 30;
+        boolean hsv_popOut = data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1;
+        boolean hsv_end = data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1;
+        boolean rgb_popOut = data.out_rgb[0] < 250 && data.out_rgb[1] < 230;
+        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1;
+        boolean rgb_end = data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1;
+        boolean rgb_vals = data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5;
+        boolean hsv_vals = data.r_val_hsv[0] < 5 && data.r_val_hsv[9] < 10 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5;
+        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_popIn && hsv_popOut && hsv_start && hsv_end;
     }
 
     public void next_Screen(String[] list, String name){
@@ -152,29 +195,6 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
             string += list[list.length - 1];
         }
         results.setText("Possible filters used:" + string);
-    }
-
-    public static int[] detect_contrast_saturation(Mat image) {
-        int[] val = new int[2];
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2HSV);
-        int rows = image.rows();
-        int cols = image.cols();
-        int totalPixels = rows * cols;
-        double saturationTotal = 0;
-        double lo_hi = 0;
-        double mid = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] pixel = image.get(i, j);
-                saturationTotal += pixel[1];
-                if (pixel[2] > 180 || pixel[2] < 100) lo_hi++;
-                else mid++;
-            }
-        }
-        val[0] = (int)((lo_hi) / (lo_hi + mid) * 100);
-        val[1] = (int)saturationTotal/totalPixels;
-        return val;
     }
 
     @Override
