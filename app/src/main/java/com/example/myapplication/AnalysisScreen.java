@@ -34,7 +34,7 @@ public class AnalysisScreen extends AppCompatActivity {
         text.setMovementMethod(new ScrollingMovementMethod());
         StringBuilder sb = new StringBuilder();
 
-        for(int t = 6; t < 7; t++) {
+        for(int t = 0; t < photoTypes.length; t++) {
             int min_r_val_rgb[] = {800, 800, 800, 800, 800, 800, 800, 800, 800, 800};
             int min_g_val_rgb[] = {800, 800, 800, 800, 800, 800, 800, 800, 800, 800};
             int min_b_val_rgb[] = {800, 800, 800, 800, 800, 800, 800, 800, 800, 800};
@@ -70,17 +70,17 @@ public class AnalysisScreen extends AppCompatActivity {
             int max_hsv_end[] = {0, 0, 0};
 
             sb.append(photoTypes[t] + "\n");
-            for (int i = 1; i <= 55; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
 
-                write(Integer.toString(i), photoTypes[t]);
+                write(i + "\n", photoTypes[t]);
 
-                write("RGB Vals", photoTypes[t]);
+                write("RGB Vals" + "\n", photoTypes[t]);
                 for (int j = 0; j < 10; j++) {
-                    write(j + ": " + data.r_val_rgb[j] + " " + data.g_val_rgb[j] + " " + data.b_val_rgb[j], photoTypes[t]);
+                    write(j + ": " + data.r_val_rgb[j] + " " + data.g_val_rgb[j] + " " + data.b_val_rgb[j] + "\n", photoTypes[t]);
                     if (data.r_val_rgb[j] > max_r_val_rgb[j]) max_r_val_rgb[j] = data.r_val_rgb[j];
                     if (data.g_val_rgb[j] > max_g_val_rgb[j]) max_g_val_rgb[j] = data.g_val_rgb[j];
                     if (data.b_val_rgb[j] > max_b_val_rgb[j]) max_b_val_rgb[j] = data.b_val_rgb[j];
@@ -89,9 +89,9 @@ public class AnalysisScreen extends AppCompatActivity {
                     if (data.g_val_rgb[j] < min_g_val_rgb[j]) min_g_val_rgb[j] = data.g_val_rgb[j];
                     if (data.b_val_rgb[j] < min_b_val_rgb[j]) min_b_val_rgb[j] = data.b_val_rgb[j];
                 }
-                write("\nHSV Vals", photoTypes[t]);
+                write("\nHSV Vals" + "\n", photoTypes[t]);
                 for (int j = 0; j < 10; j++) {
-                    write(j + ": " + data.r_val_hsv[j] + " " + data.g_val_hsv[j] + " " + data.b_val_hsv[j], photoTypes[t]);
+                    write(j + ": " + data.r_val_hsv[j] + " " + data.g_val_hsv[j] + " " + data.b_val_hsv[j] + "\n", photoTypes[t]);
                     if (data.r_val_hsv[j] > max_r_val_hsv[j]) max_r_val_hsv[j] = data.r_val_hsv[j];
                     if (data.g_val_hsv[j] > max_g_val_hsv[j]) max_g_val_hsv[j] = data.g_val_hsv[j];
                     if (data.b_val_hsv[j] > max_b_val_hsv[j]) max_b_val_hsv[j] = data.b_val_hsv[j];
@@ -101,15 +101,15 @@ public class AnalysisScreen extends AppCompatActivity {
                     if (data.b_val_hsv[j] < min_b_val_hsv[j]) min_b_val_hsv[j] = data.b_val_hsv[j];
                 }
 
-                write("\nRGB Pop In: " + data.in_rgb[0] + " " + data.in_rgb[1] + " " + data.in_rgb[2], photoTypes[t]);
-                write("RGB Pop Out: " + data.out_rgb[0] + " " + data.out_rgb[1] + " " + data.out_rgb[2], photoTypes[t]);
-                write("\nHSV Pop In: " + data.in_hsv[0] + " " + data.in_hsv[1] + " " + data.in_hsv[2], photoTypes[t]);
-                write("HSV Pop Out: " + data.out_hsv[0] + " " + data.out_hsv[1] + " " + data.out_hsv[2] + "\n", photoTypes[t]);
+                write("\nRGB Pop In: " + data.in_rgb[0] + " " + data.in_rgb[1] + " " + data.in_rgb[2] + "\n", photoTypes[t]);
+                write("RGB Pop Out: " + data.out_rgb[0] + " " + data.out_rgb[1] + " " + data.out_rgb[2] + "\n", photoTypes[t]);
+                write("\nHSV Pop In: " + data.in_hsv[0] + " " + data.in_hsv[1] + " " + data.in_hsv[2] + "\n", photoTypes[t]);
+                write("HSV Pop Out: " + data.out_hsv[0] + " " + data.out_hsv[1] + " " + data.out_hsv[2] + "\n\n", photoTypes[t]);
 
-                write("\nRGB Start Vals: " + data.HistDataRgb[0][0] + " " + data.HistDataRgb[1][0] + " " + data.HistDataRgb[2][0], photoTypes[t]);
-                write("RGB End Vals: " + data.HistDataRgb[0][255] + " " + data.HistDataRgb[1][255] + " " + data.HistDataRgb[2][255], photoTypes[t]);
-                write("\nHSV Start Vals: " + data.HistDataHsv[0][0] + " " + data.HistDataHsv[1][0] + " " + data.HistDataHsv[2][0], photoTypes[t]);
-                write("HSV End Vals: " + data.HistDataHsv[0][255] + " " + data.HistDataHsv[1][255] + " " + data.HistDataHsv[2][255] + "\n", photoTypes[t]);
+                write("\nRGB Start Vals: " + data.HistDataRgb[0][0] + " " + data.HistDataRgb[1][0] + " " + data.HistDataRgb[2][0] + "\n", photoTypes[t]);
+                write("RGB End Vals: " + data.HistDataRgb[0][255] + " " + data.HistDataRgb[1][255] + " " + data.HistDataRgb[2][255] + "\n", photoTypes[t]);
+                write("\nHSV Start Vals: " + data.HistDataHsv[0][0] + " " + data.HistDataHsv[1][0] + " " + data.HistDataHsv[2][0] + "\n", photoTypes[t]);
+                write("HSV End Vals: " + data.HistDataHsv[0][255] + " " + data.HistDataHsv[1][255] + " " + data.HistDataHsv[2][255] + "\n\n", photoTypes[t]);
 
                 for (int j = 0; j < 3; j++) {
                     if (min_rgb_in[j] > data.in_rgb[j]) min_rgb_in[j] = data.in_rgb[j];
@@ -195,6 +195,41 @@ public class AnalysisScreen extends AppCompatActivity {
             for (int i = 0; i < 3; i++) sb.append(" " + max_hsv_end[i]);
 
             sb.append("\n\n");
+
+            write(min_rgb_in[0] + "\t" + min_rgb_in[1] + "\t" + min_rgb_in[2], photoTypes[t]);
+            write("\t" + max_rgb_in[0] + "\t" + max_rgb_in[1] + "\t" + max_rgb_in[2], photoTypes[t]);
+            write("\t" + min_rgb_out[0] + "\t" + min_rgb_out[1] + "\t" + min_rgb_out[2], photoTypes[t]);
+            write("\t" + max_rgb_out[0] + "\t" + max_rgb_out[1] + "\t" + max_rgb_out[2], photoTypes[t]);
+            write("\t" + min_rgb_start[0] + "\t" + min_rgb_start[1] + "\t" + min_rgb_start[2], photoTypes[t]);
+            write("\t" + max_rgb_start[0] + "\t" + max_rgb_start[1] + "\t" + max_rgb_start[2], photoTypes[t]);
+            write("\t" + min_rgb_end[0] + "\t" + min_rgb_end[1] + "\t" + min_rgb_end[2], photoTypes[t]);
+            write("\t" + max_rgb_end[0] + "\t" + max_rgb_end[1] + "\t" + max_rgb_end[2], photoTypes[t]);
+
+            for (int i = 0; i < 10; i++) write("\t" + min_r_val_rgb[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + min_g_val_rgb[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + min_b_val_rgb[i], photoTypes[t]);
+
+            for (int i = 0; i < 10; i++) write("\t" + max_r_val_rgb[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + max_g_val_rgb[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + max_b_val_rgb[i], photoTypes[t]);
+
+            write("\n", photoTypes[t]);
+            write(min_hsv_in[0] + "\t" + min_hsv_in[1] + "\t" + min_hsv_in[2], photoTypes[t]);
+            write("\t" + max_hsv_in[0] + "\t" + max_hsv_in[1] + "\t" + max_hsv_in[2], photoTypes[t]);
+            write("\t" + min_hsv_out[0] + "\t" + min_hsv_out[1] + "\t" + min_hsv_out[2], photoTypes[t]);
+            write("\t" + max_hsv_out[0] + "\t" + max_hsv_out[1] + "\t" + max_hsv_out[2], photoTypes[t]);
+            write("\t" + min_hsv_start[0] + "\t" + min_hsv_start[1] + "\t" + min_hsv_start[2], photoTypes[t]);
+            write("\t" + max_hsv_start[0] + "\t" + max_hsv_start[1] + "\t" + max_hsv_start[2], photoTypes[t]);
+            write("\t" + min_hsv_end[0] + "\t" + min_hsv_end[1] + "\t" + min_hsv_end[2], photoTypes[t]);
+            write("\t" + max_hsv_end[0] + "\t" + max_hsv_end[1] + "\t" + max_hsv_end[2], photoTypes[t]);
+
+            for (int i = 0; i < 10; i++) write("\t" + min_r_val_hsv[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + min_g_val_hsv[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + min_b_val_hsv[i], photoTypes[t]);
+
+            for (int i = 0; i < 10; i++) write("\t" + max_r_val_hsv[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + max_g_val_hsv[i], photoTypes[t]);
+            for (int i = 0; i < 10; i++) write("\t" + max_b_val_hsv[i], photoTypes[t]);
         }
 
         text.setText(sb.toString());
@@ -208,7 +243,7 @@ public class AnalysisScreen extends AppCompatActivity {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(textFile, true ));
 
-            writer.write(txt + "\n");
+            writer.write(txt);
             writer.close();
 
             MediaScannerConnection.scanFile(this,
@@ -219,12 +254,12 @@ public class AnalysisScreen extends AppCompatActivity {
     }
 
     private Bitmap getImage(int val, String photoType) {
-        String photoPath = this.getExternalFilesDir(null) + "/" + photoType + val + ".jpg";
+        String photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + " (" + val + ").jpg";
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
         if(bmp==null){
-            photoPath = this.getExternalFilesDir(null) + "/" + photoType + val + ".jpeg";
+            photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + " (" + val + ").jpeg";
             options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             bmp = BitmapFactory.decodeFile(photoPath, options);

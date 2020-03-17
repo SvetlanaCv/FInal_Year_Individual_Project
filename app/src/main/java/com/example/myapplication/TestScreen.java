@@ -17,11 +17,10 @@ import android.text.method.ScrollingMovementMethod;
 
 public class TestScreen extends AppCompatActivity {
 
-    static final String[] photoTypes = {"ging", "nash", "clar", "rise", "crem", "perp", "un"};
+    static final String[] photoTypes = {"Gingham/ging", "Nashville/nash", "Clarendon/clar", "Rise/rise", "Crema/crem", "Perpetua/perp", "Plain/un"};
 
     StringBuilder sb;
     TextView results;
-    int TP, TN, FP, FN;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,19 +35,21 @@ public class TestScreen extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         sb = new StringBuilder();
+        int TP, TN, FP, FN;
+        TP = 0; TN = 0; FP = 0; FN = 0;
 
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkPlain(data)) {
-                    if(photoTypes[t].equals("un")) TP++;
+                    if(photoTypes[t].equals("Plain/un")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("un")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Plain/un")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -57,17 +58,17 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkClarendon(data)) {
-                    if(photoTypes[t].equals("clar")) TP++;
+                    if(photoTypes[t].equals("Clarendon/clar")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("clar")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Clarendon/clar")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -76,17 +77,17 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkNashville(data)) {
-                    if(photoTypes[t].equals("nash")) TP++;
+                    if(photoTypes[t].equals("Nashville/nash")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("nash")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Nashville/nash")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -95,17 +96,17 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkGingham(data)) {
-                    if(photoTypes[t].equals("ging")) TP++;
+                    if(photoTypes[t].equals("Gingham/ging")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("ging")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Gingham/ging")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -114,17 +115,17 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkCrema(data)) {
-                    if(photoTypes[t].equals("crem")) TP++;
+                    if(photoTypes[t].equals("Crema/crem")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("crem")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Crema/crem")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -133,17 +134,17 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkRise(data)) {
-                    if(photoTypes[t].equals("rise")) TP++;
+                    if(photoTypes[t].equals("Rise/rise")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("rise")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Rise/rise")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
@@ -152,22 +153,23 @@ public class TestScreen extends AppCompatActivity {
 
         TP = 0; TN = 0; FP = 0; FN = 0;
         for(int t = 0; t < photoTypes.length; t++) {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 20; i++) {
                 Bitmap bmp = getImage(i, photoTypes[t]);
                 Mat mat = new Mat();
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 if(checkPerpetua(data)) {
-                    if(photoTypes[t].equals("perp")) TP++;
+                    if(photoTypes[t].equals("Perpetua/perp")) TP++;
                     else { Log.d("FP", photoTypes[t] + i); FP++;}
                 }
                 else{
-                    if(photoTypes[t].equals("perp")) { Log.d("FN", photoTypes[t] + i); FN++; }
+                    if(photoTypes[t].equals("Perpetua/perp")) { Log.d("FN", photoTypes[t] + i); FN++; }
                     else TN++;
                 }
             }
         }
         sb.append("Perp" + "\nTP: " + TP + "\n" + "TN: " + TN + "\n" + "FP: " + FP + "\n" + "FN: " + FN + "\n\n");
+
 
         results.setText(sb.toString());
     }
@@ -177,80 +179,78 @@ public class TestScreen extends AppCompatActivity {
     }
 
     private boolean checkPerpetua(HistData data){
-        boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25;
-        boolean rgb_start = data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300;
-        boolean rgb_end = data.HistDataRgb[2][255] < 60;
+        boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[2] < 25;
+        boolean rgb_start = data.HistDataRgb[0][0] < 600 && data.HistDataRgb[1][0] < 1;
+        boolean rgb_end = data.HistDataRgb[2][255] < 600;
         boolean rgb_val = data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400;
-        boolean hsv_popIn = data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150;
-        boolean hsv_end = data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1;
-        boolean hsv_vals = data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15;
-        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_popIn && hsv_start && hsv_end && hsv_vals;
+        boolean hsv_popIn = data.in_hsv[0] > 5 && data.in_hsv[0] < 65 && data.in_hsv[1] < 25 && data.in_hsv[2] < 25;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 200;
+        boolean hsv_vals = data.r_val_hsv[0] < 150 && data.g_val_hsv[9] < 60 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 50 && data.b_val_hsv[7] < 100;
+        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_popIn && hsv_start && hsv_vals;
     }
 
     private boolean checkCrema(HistData data){
-        boolean rgb_popOut = data.out_rgb[2] <= 250;
-        boolean rgb_start = data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250;
-        boolean rgb_end = data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1;
-        boolean rgb_val = data.b_val_rgb[9] < 80;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700;
-        boolean hsv_end = data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250;
-        boolean hsv_val = data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200;
-        return rgb_popOut && rgb_start && rgb_end && rgb_val && hsv_start && hsv_end && hsv_val;
+        boolean rgb_start = data.HistDataRgb[0][0] < 500 && data.HistDataRgb[1][0] < 5;
+        boolean rgb_end = data.HistDataRgb[0][255] < 700 && data.HistDataRgb[1][255] < 10 && data.HistDataRgb[2][255] < 10;
+        boolean rgb_val = data.b_val_rgb[9] < 150;
+        boolean hsv_in = data.in_hsv[0] > 4 && data.in_hsv[0] < 70 && data.in_hsv[1] < 20 && data.in_hsv[2] < 1;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500;
+        boolean hsv_end = data.HistDataHsv[0][255] < 700;
+        boolean hsv_val = data.r_val_hsv[0] < 200 & data.g_val_hsv[9] < 150;
+        return rgb_start && rgb_end && rgb_val && hsv_start && hsv_end && hsv_val;
     }
 
     private boolean checkRise(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] > 5 && data.in_rgb[1] > 5;
-        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15;
-        boolean rgb_end = data.HistDataRgb[2][255] < 50;
-        boolean rgb_val = data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50;
-        boolean hsv_in = data.in_hsv[0] > 10 && data.in_hsv[2] == 0;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_end = data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1;
-        boolean hsv_val = data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400;
+        boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[2] < 50;
+        boolean rgb_start = data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 400;
+        boolean rgb_end = data.HistDataRgb[2][255] < 200;
+        boolean rgb_val = data.r_val_rgb[0] < 200 && data.g_val_rgb[0] < 150 && data.b_val_rgb[0] < 150 && data.b_val_rgb[9] < 300;
+        boolean hsv_in = data.in_hsv[0] > 10 && data.in_hsv[1] < 50 && data.in_hsv[2] < 1;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500;
+        boolean hsv_end = data.HistDataHsv[1][255] < 300;
+        boolean hsv_val = data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 100;
         return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_in && hsv_start && hsv_end && hsv_val;
     }
 
     private boolean checkClarendon(HistData data){
         boolean rgb_start = data.HistDataRgb[1][0] < 200;
-        boolean rgb_end = data.HistDataRgb[0][255] < 600;
-        boolean hsv_popOut = data.out_hsv[0] > 220 && data.out_hsv[1] > 200;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_vals = data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100;
-        return rgb_start && rgb_end && hsv_popOut && hsv_start && hsv_vals;
+        boolean hsv_start = data.HistDataHsv[0][0] < 10;
+        boolean hsv_vals = data.b_val_hsv[5] < 150 & data.b_val_hsv[6] < 400 && data.b_val_hsv[7] < 150;
+        return rgb_start && hsv_start && hsv_vals;
     }
 
     private boolean checkNashville(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] < 10;
-        boolean rgb_popOut = data.out_rgb[1] < 250;
-        boolean rgb_start = data.HistDataRgb[2][0] < 1;
-        boolean rgb_end = data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5;
-        boolean rgb_vals = data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5;
-        boolean hsv_vals = data.b_val_hsv[2] < 200;
-        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals;
+        boolean rgb_start = data.HistDataRgb[2][0] < 50;
+        boolean rgb_end = data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 5;
+        boolean rgb_vals = data.b_val_rgb[0] < 15 && data.b_val_rgb[1] < 100 && data.b_val_rgb[8] < 250 && data.b_val_rgb[9] < 15;
+        boolean hsv_vals = data.r_val_hsv[0] < 10 && data.r_val_hsv[1] < 40;
+        boolean hsv_in = data.in_hsv[0] > 5;
+        boolean hsv_out = data.out_hsv[0] > 150;
+        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 310 && data.HistDataHsv[2][0] < 500;
+        return rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_in && hsv_out && hsv_start;
     }
 
     private boolean checkGingham(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10;
-        boolean hsv_popIn = data.in_hsv[0] > 30;
-        boolean hsv_popOut = data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230;
+        boolean rgb_popIn = data.in_rgb[1] > 15;
+        boolean hsv_popIn = data.in_hsv[0] > 20;
+        boolean hsv_popOut = data.out_hsv[0] > 90 && data.out_hsv[1] > 40 && data.out_hsv[2] > 70;
         boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_end = data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1;
-        boolean rgb_popOut = data.out_rgb[0] < 250 && data.out_rgb[1] < 230;
-        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1;
-        boolean rgb_end = data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1;
-        boolean rgb_vals = data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5;
-        boolean hsv_vals = data.r_val_hsv[0] < 5 && data.r_val_hsv[9] < 10 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5;
+        boolean hsv_end = data.HistDataHsv[0][255] < 50 && data.HistDataHsv[1][255] < 5 && data.HistDataHsv[2][255] < 1;
+        boolean rgb_popOut = data.out_rgb[0] > 80 && data.out_rgb[1] > 80 && data.out_rgb[1] < 240;
+        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 50;
+        boolean rgb_end = data.HistDataRgb[0][255] < 80 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1;
+        boolean rgb_vals = data.r_val_rgb[0] < 20 && data.r_val_rgb[1] < 250 && data.r_val_rgb[9] < 80 && data.g_val_rgb[0] < 5 && data.g_val_rgb[1] < 250 && data.g_val_rgb[9] < 10 && data.b_val_rgb[0] < 50 && data.b_val_rgb[1] < 250 && data.b_val_rgb[9] < 10;
+        boolean hsv_vals = data.r_val_hsv[0] < 5 && data.r_val_hsv[1] < 200 && data.r_val_hsv[9] < 50 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5;
         return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_popIn && hsv_popOut && hsv_start && hsv_end;
     }
 
     private Bitmap getImage(int val, String photoType) {
-        String photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + val + ".jpg";
+        String photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + " (" + val + ").jpg";
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
         if(bmp==null){
-            photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + val + ".jpeg";
+            photoPath = this.getExternalFilesDir(null) + "/Test/" + photoType + " (" + val + ").jpeg";
             options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             bmp = BitmapFactory.decodeFile(photoPath, options);
