@@ -14,6 +14,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +34,6 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
 
 import javax.xml.transform.Source;
-
-import com.example.myapplication.HistData;
 
 import java.io.FileOutputStream;
 import java.io.File;
@@ -119,18 +118,58 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void removeFilter(String tag){
-        if(tag.equals("Clarendon")) removeClarendon();
-        if(tag.equals("Gingham")) removeGingham();
+        if(tag.equals("Clarendon")) removeClarendon(null);
+        if(tag.equals("Gingham")) removeGingham(null);
         if(tag.equals("rgb hist")) showHist();
-        if(tag.equals("Nashville")) removeNashville();
+        if(tag.equals("Nashville")) removeNashville(null);
         if(tag.equals("Original")) showOriginal();
-        if(tag.equals("Rise")) removeRise();
-        if(tag.equals("Crema")) removeCrema();
-        if(tag.equals("Perpetua")) removePerpetua();
+        if(tag.equals("Rise")) removeRise(null);
+        if(tag.equals("Crema")) removeCrema(null);
+        if(tag.equals("Perpetua")) removePerpetua(null);
+        if(tag.equals("Check All")) checkAll();
     }
 
-    public void removePerpetua(){
+    public void checkAll(){
+        for(int i = 1; i <= 10; i++){
+            Bitmap bmp = getImage("/Images/Perpetua/perp (" + i + ")");
+            Bitmap converted = removePerpetua(bmp);
+            saveImage(converted, "/Reversed/Perpetua/perp" + i + ".jpg");
+            Log.d("Reverse", "perp" + i);
+        }
+    }
+
+    private Bitmap getImage(String name){
+        String photoPath = this.getExternalFilesDir(null) + name + ".jpg";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
+        if(bmp==null){
+            photoPath = this.getExternalFilesDir(null) + name + ".jpeg";
+            options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            bmp = BitmapFactory.decodeFile(photoPath, options);
+        }
+        return bmp;
+    }
+
+    public String saveImage(Bitmap photo, String name){
+        File photoFile = new File(this.getExternalFilesDir(null), name);
+        try {
+            if (!photoFile.exists()) photoFile.createNewFile();
+            FileOutputStream out = new FileOutputStream(photoFile);
+            Bitmap bitmap = photo.copy(photo.getConfig(), true);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            Log.e("ReadWriteFile", "Unable to write data.");
+        }
+        return name;
+    }
+
+    public Bitmap removePerpetua(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
@@ -142,6 +181,13 @@ public class Main3Activity extends AppCompatActivity {
         double[] blue = {18, 0.49, 0.0051, -.0000133, 0};
         mat = applyCubic(mat, red, green, blue);
          */
+        Bitmap icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.perpetua_mask);
+        Mat icon_mat = new Mat();
+        Utils.bitmapToMat(icon, icon_mat);
+        Imgproc.cvtColor(icon_mat, icon_mat, Imgproc.COLOR_RGBA2RGB);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+        Imgproc.resize(icon_mat, icon_mat, new Size(mat.width(), mat.height()), 0, 0);
+        Core.subtract(mat, icon_mat, mat);
 
         //Reverse
         double[] red = {0, 0.289, 0.0332, -0.000256, .000000539};
@@ -152,10 +198,13 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bitmap;
     }
 
-    public void removeCrema(){
+    public Bitmap removeCrema(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
+
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
@@ -174,6 +223,7 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bitmap;
     }
 
     public Mat vignette(Mat mat) {
@@ -205,8 +255,9 @@ public class Main3Activity extends AppCompatActivity {
         currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
     }
 
-    public void removeNashville(){
+    public Bitmap removeNashville(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
@@ -227,6 +278,7 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bitmap;
     }
 
     public Mat equalize(Mat img, boolean red, boolean green, boolean blue){
@@ -254,17 +306,19 @@ public class Main3Activity extends AppCompatActivity {
         imageView.setImageBitmap(bmp);
     }
 
-    public void removeRise() {
+    public Bitmap removeRise(Bitmap bmp) {
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
+
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
         //Reverse
-        Mat mask = vignette(mat);
-        Core.add(mat, mask, mat);
+        //Mat mask = vignette(mat);
+        //Core.add(mat, mask, mat);
         mat = equaliseHistManual(mat, 30, 30,30,256,256,256);
-        mat = changeChannel(mat, 0,0,0,0,0,0,  255,255,220, 255,255,255, false);
+        mat = changeChannel(mat, 20,0,0,0,0,0,  255,255,255, 220,220,255, false);
 
         /*
         //Imitate
@@ -276,10 +330,13 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bitmap;
     }
 
-    public void removeClarendon() {
+    public Bitmap removeClarendon(Bitmap bmp) {
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
+
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
@@ -300,6 +357,7 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bitmap;
     }
 
     public Mat applyCubic(Mat img, double[] red, double[] green, double[] blue){
@@ -315,8 +373,9 @@ public class Main3Activity extends AppCompatActivity {
         return img;
     }
 
-    public void removeGingham(){
+    public Bitmap removeGingham(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+        if(bmp!=null) bitmap = bmp;
         Mat mat = new Mat();
         Utils.bitmapToMat(bitmap, mat);
 
@@ -336,6 +395,7 @@ public class Main3Activity extends AppCompatActivity {
         if(data.in_rgb[0]>50 || data.in_rgb[1]>50 || data.in_rgb[2]>50) r_in = 30; g_in = 30; b_in = 20;
 
         mat = equaliseHistManual(mat, r_in, g_in, b_in, r_out, g_out, b_out);
+        mat = contrast_brightness(mat, 1, -20f);
 
         /*
         //Immitate
@@ -346,6 +406,7 @@ public class Main3Activity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
+        return bmp;
     }
 
     public static Mat contrast_brightness(Mat image, float a, float b) {
