@@ -49,6 +49,9 @@ public class Main3Activity extends AppCompatActivity {
 
     int n = 0;
 
+    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/"};
+    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,11 +133,18 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void checkAll(){
-        for(int i = 1; i <= 10; i++){
-            Bitmap bmp = getImage("/Images/Perpetua/perp (" + i + ")");
-            Bitmap converted = removePerpetua(bmp);
-            saveImage(converted, "/Reversed/Perpetua/perp" + i + ".jpg");
-            Log.d("Reverse", "perp" + i);
+        for(int j = 0; j < folder.length; j++) {
+            for (int i = 1; i <= 50; i++) {
+                Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
+                Bitmap converted = removePerpetua(bmp);
+                if(j==1) converted = removeCrema(bmp);
+                if(j==2) converted = removeGingham(bmp);
+                if(j==3) converted = removeNashville(bmp);
+                if(j==4) converted = removeRise(bmp);
+                if(j==5) converted = removeClarendon(bmp);
+                saveImage(converted, "/Reversed/" + folder[j] +  folderName[j] + i + ".jpg");
+                Log.d("Reverse", folderName[j] + i);
+            }
         }
     }
 
@@ -181,6 +191,8 @@ public class Main3Activity extends AppCompatActivity {
         double[] blue = {18, 0.49, 0.0051, -.0000133, 0};
         mat = applyCubic(mat, red, green, blue);
          */
+
+        /*
         Bitmap icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.perpetua_mask);
         Mat icon_mat = new Mat();
         Utils.bitmapToMat(icon, icon_mat);
@@ -195,6 +207,9 @@ public class Main3Activity extends AppCompatActivity {
         double[] blue = {0, 0.289, 0.0332, -0.000256, .000000539};
         mat = applyCubic(mat, red, green, blue);
 
+         */
+        Scalar scalar = new Scalar(0, -10,-10);
+        Core.add(mat, scalar, mat);
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
@@ -218,7 +233,7 @@ public class Main3Activity extends AppCompatActivity {
 
         //Reverse
         mat = hue_saturation(mat, 1f, 1.3f);
-        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,220, 230,255, false);
+        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,230, 230,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);

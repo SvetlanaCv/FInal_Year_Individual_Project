@@ -25,7 +25,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".TestScreen"></activity>
+        <activity android:name=".ComparisonScreen"></activity>
+        <activity android:name=".TestScreen" />
         <activity
             android:name=".AnalysisScreen"
             android:configChanges="orientation"

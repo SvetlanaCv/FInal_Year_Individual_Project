@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
 
     private static final String TAG = "MainActivity";
 
-    private Button selectPhoto, analysis, test;
+    private Button selectPhoto, analysis, test, compare;
 
     private static final int PICK_IMAGE = 1;
 
@@ -121,6 +121,19 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                 testScreen();
             }
         });
+
+        compare = findViewById(R.id.compare);
+        compare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                comparisonScreen();
+            }
+        });
+    }
+
+    private void comparisonScreen(){
+        Intent i = new Intent(this, ComparisonScreen.class);
+        startActivity(i);
     }
 
     private void testScreen(){
