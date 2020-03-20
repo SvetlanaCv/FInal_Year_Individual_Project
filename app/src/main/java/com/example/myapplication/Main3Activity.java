@@ -133,7 +133,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void checkAll(){
-        for(int j = 1; j < 2; j++) {
+        for(int j = 0; j < 1; j++) {
             for (int i = 1; i <= 50; i++) {
                 Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
                 Bitmap converted = removePerpetua(bmp);
@@ -208,8 +208,8 @@ public class Main3Activity extends AppCompatActivity {
         mat = applyCubic(mat, red, green, blue);
 
          */
-        Scalar scalar = new Scalar(0, -10,-10);
-        Core.add(mat, scalar, mat);
+        mat = changeChannel(mat, 0,0,0,10,0,0,255,255,255,255,235,255, false);
+
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
