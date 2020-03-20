@@ -34,7 +34,7 @@ public class ComparisonScreen extends AppCompatActivity {
         super.onResume();
         StringBuilder sb = new StringBuilder();
 
-        for(int j = 0; j < folder.length; j++){
+        for(int j = 1; j < 2; j++){
             int improvements = 0;
             for(int i = 1; i <= 50; i++) {
                 Bitmap original = getImage("/Images/Plain/un (" + i + ")");
@@ -82,8 +82,8 @@ public class ComparisonScreen extends AppCompatActivity {
                 }
             }
         }
-
-        return (orig_rev[0] + orig_rev[1] + orig_rev[2]) < (orig_filt[0] + orig_filt[1] + orig_filt[2]);
+        int thing = orig_rev[0];
+        return (thing + orig_rev[1] + orig_rev[2]) < (orig_filt[0] + orig_filt[1] + orig_filt[2]);
     }
 
     private Bitmap getImage(String filename) {

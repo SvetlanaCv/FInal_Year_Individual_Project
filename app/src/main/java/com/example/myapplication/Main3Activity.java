@@ -133,7 +133,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void checkAll(){
-        for(int j = 0; j < folder.length; j++) {
+        for(int j = 1; j < 2; j++) {
             for (int i = 1; i <= 50; i++) {
                 Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
                 Bitmap converted = removePerpetua(bmp);
@@ -232,8 +232,7 @@ public class Main3Activity extends AppCompatActivity {
         */
 
         //Reverse
-        mat = hue_saturation(mat, 1f, 1.3f);
-        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,230, 230,255, false);
+        mat = changeChannel(mat, 10,10,0,0,20,10,255,255,240,255, 255,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
