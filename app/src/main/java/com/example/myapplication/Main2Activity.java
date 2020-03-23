@@ -64,10 +64,6 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         Mat mat = new Mat();
         final String bitmapName = intent.getStringExtra("image name");
 
-        filterList.add("Original");
-        filterList.add("rgb hist");
-        filterList.add("Check All");
-
         imageView = findViewById(R.id.imageView);
         try {
             Bitmap bitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
@@ -96,86 +92,151 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
                 next_Screen(stringArray, bitmapName);
             }
         });
-
     }
 
     public void detection(Mat img) {
         HistData data = new HistData(img);
 
-        if(checkGingham(data)) filterList.add("Gingham");
-        if(checkNashville(data)) filterList.add("Nashville");
-        if(checkClarendon(data)) filterList.add("Clarendon");
-        if(checkPerpetua(data)) filterList.add("Perpetua");
-        if(checkCrema(data)) filterList.add("Crema");
-        if(checkRise(data))filterList.add("Rise");
+        if(!checkSaturation(data)) {
+            filterList.add("Gingham\n" + checkGingham(data) + "\n");
+            filterList.add("Nashville\n" + checkNashville(data) + "\n");
+            filterList.add("Clarendon\n" + checkClarendon(data) + "\n");
+            filterList.add("Perpetua\n" + checkPerpetua(data) + "\n");
+            filterList.add("Crema\n" + checkCrema(data) + "\n");
+            filterList.add("Rise\n" + checkRise(data) + "\n");
+        }
+        else filterList.add("Black and White Image Detected\nNot reversable");
     }
 
-    private boolean checkPerpetua(HistData data){
-        boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25;
-        boolean rgb_start = data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300;
-        boolean rgb_end = data.HistDataRgb[2][255] < 60;
-        boolean rgb_val = data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400;
-        boolean hsv_popIn = data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150;
-        boolean hsv_end = data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1;
-        boolean hsv_vals = data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15;
-        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_popIn && hsv_start && hsv_end && hsv_vals;
+    private boolean checkSaturation(HistData data){
+        boolean bnw = false;
+        if(data.g_val_hsv[0] < 50 && data.g_val_hsv[1] < 5 && data.g_val_hsv[2] < 5 && data.g_val_hsv[3] < 5 &&
+                data.g_val_hsv[4] < 5 && data.g_val_hsv[5] < 5 && data.g_val_hsv[6] < 5 && data.g_val_hsv[7] < 5 &&
+                data.g_val_hsv[8] < 5 && data.g_val_hsv[9] < 5) bnw = true;
+        return bnw;
     }
 
-    private boolean checkCrema(HistData data){
-        boolean rgb_popOut = data.out_rgb[2] <= 250;
-        boolean rgb_start = data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250;
-        boolean rgb_end = data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1;
-        boolean rgb_val = data.b_val_rgb[9] < 80;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700;
-        boolean hsv_end = data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250;
-        boolean hsv_val = data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200;
-        return rgb_popOut && rgb_start && rgb_end && rgb_val && hsv_start && hsv_end && hsv_val;
+    private String checkPerpetua(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count++;
+        if(data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count++;
+        if(data.HistDataRgb[2][255] < 60) count++;
+        if(data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count++;
+        if(data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count++;
+        if(data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count++;
+        if(data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count++;
+        if(data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count++;
+        if(count < 2)  result = "Extremely Unlikely";
+        else if(count < 4) result = "Unlikely";
+        else if(count < 6) result = "Likely";
+        else if(count <= 8) result = "Extremely Likely";
+
+        return result;
     }
 
-    private boolean checkRise(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] > 5 && data.in_rgb[1] > 5;
-        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15;
-        boolean rgb_end = data.HistDataRgb[2][255] < 50;
-        boolean rgb_val = data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50;
-        boolean hsv_in = data.in_hsv[0] > 10 && data.in_hsv[2] == 0;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_end = data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1;
-        boolean hsv_val = data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400;
-        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_in && hsv_start && hsv_end && hsv_val;
+    private String checkCrema(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.out_rgb[2] <= 250) count++;
+        if(data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count++;
+        if(data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count++;
+        if(data.b_val_rgb[9] < 80) count++;
+        if(data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count++;
+        if(data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count++;
+        if(data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count++;
+
+        if(count < 1)  result = "Extremely Unlikely";
+        else if(count < 3) result = "Unlikely";
+        else if(count < 5) result = "Likely";
+        else if(count <= 7) result = "Extremely Likely";
+
+        return result;
     }
 
-    private boolean checkClarendon(HistData data){
-        boolean rgb_start = data.HistDataRgb[1][0] < 200;
-        boolean rgb_end = data.HistDataRgb[0][255] < 600;
-        boolean hsv_popOut = data.out_hsv[0] > 220 && data.out_hsv[1] > 200;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_vals = data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100;
-        return rgb_start && rgb_end && hsv_popOut && hsv_start && hsv_vals;
+    private String checkRise(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count++;
+        if(data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count++;
+        if(data.HistDataRgb[2][255] < 50) count++;
+        if(data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count++;
+        if(data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count++;
+        if(data.HistDataHsv[0][0] < 1) count++;
+        if(data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count++;
+        if(data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count++;
+
+        if(count < 2)  result = "Extremely Unlikely";
+        else if(count < 4) result = "Unlikely";
+        else if(count < 6) result = "Likely";
+        else if(count <= 8) result = "Extremely Likely";
+
+        return result;
     }
 
-    private boolean checkNashville(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] < 10;
-        boolean rgb_popOut = data.out_rgb[1] < 250;
-        boolean rgb_start = data.HistDataRgb[2][0] < 1;
-        boolean rgb_end = data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5;
-        boolean rgb_vals = data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5;
-        boolean hsv_vals = data.b_val_hsv[2] < 200;
-        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals;
+    private String checkClarendon(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.HistDataRgb[1][0] < 200) count++;
+        if(data.HistDataRgb[0][255] < 600) count++;
+        if(data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count++;
+        if(data.HistDataHsv[0][0] < 1) count++;
+        if(data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count++;
+
+        if(count < 1)  result = "Extremely Unlikely";
+        else if(count < 3) result = "Unlikely";
+        else if(count <= 5) result = "Likely";
+
+        return result;
     }
 
-    private boolean checkGingham(HistData data){
-        boolean rgb_popIn = data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10;
-        boolean hsv_popIn = data.in_hsv[0] > 30;
-        boolean hsv_popOut = data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230;
-        boolean hsv_start = data.HistDataHsv[0][0] < 1;
-        boolean hsv_end = data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1;
-        boolean rgb_popOut = data.out_rgb[0] < 250 && data.out_rgb[1] < 230;
-        boolean rgb_start = data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1;
-        boolean rgb_end = data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1;
-        boolean rgb_vals = data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5;
-        boolean hsv_vals = data.r_val_hsv[0] < 5 && data.r_val_hsv[9] < 10 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5;
-        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_popIn && hsv_popOut && hsv_start && hsv_end;
+    private String checkNashville(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.in_rgb[0] < 10) count++;
+        if(data.out_rgb[1] < 250) count++;
+        if(data.HistDataRgb[2][0] < 1) count++;
+        if(data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count++;
+        if(data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count++;
+        if(data.b_val_hsv[2] < 200) count++;
+
+        if(count < 2)  result = "Extremely Unlikely";
+        else if(count < 6) result = "Likely";
+        else if(count <= 8) result = "Extremely Likely";
+
+        return result;
+    }
+
+    private String checkGingham(HistData data){
+        int count = 0;
+        String result = "";
+
+        if(data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count++;
+        if(data.in_hsv[0] > 30) count++;
+        if(data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count++;
+        if(data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count++;
+        if(data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count++;
+        if(data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count++;
+        if(data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count++;
+        if(data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5) {
+            result = "Extremely Likely";
+            count++;
+        }
+        if(data.r_val_hsv[0] < 5 && data.r_val_hsv[9] < 10 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5) count++;
+
+        if(result.equals("")) {
+            if (count < 2) result = "Extremely Unlikely";
+            else if (count < 4) result = "Unlikely";
+            else if (count < 6) result = "Likely";
+            else if (count <= 8) result = "Extremely Likely";
+        }
+
+        return result;
     }
 
     public void next_Screen(String[] list, String name){
@@ -190,11 +251,11 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         if(list.length != 0) {
             for (int i = 0; i < list.length - 1; i++) {
                 string += list[i];
-                string += ", ";
+                string += "\n";
             }
             string += list[list.length - 1];
         }
-        results.setText("Possible filters used:" + string);
+        results.setText(string);
     }
 
     @Override

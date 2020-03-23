@@ -6,39 +6,87 @@
     android:layout_height="match_parent"
     tools:context=".Main3Activity">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/capture" />
+
+    <ScrollView
         android:id="@+id/scroll"
-        android:layout_width="192dp"
-        android:layout_height="724dp"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
 
         <LinearLayout
             android:id="@+id/buttonLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="horizontal"
+            android:layout_height="100dp"
+            android:gravity="top"
+            android:orientation="vertical"
             android:paddingLeft="16dp"
             android:paddingRight="16dp">
 
+            <Button
+                android:id="@+id/clar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Clarendon" />
 
+            <Button
+                android:id="@+id/nash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nashville" />
+
+            <Button
+                android:id="@+id/ging"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Gingham" />
+
+            <Button
+                android:id="@+id/crem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Crema" />
+
+            <Button
+                android:id="@+id/rise"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Rise" />
+
+            <Button
+                android:id="@+id/perp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Perpetua" />
+
+            <Button
+                android:id="@+id/save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="save" />
+
+            <Button
+                android:id="@+id/check"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="check all" />
         </LinearLayout>
+
     </ScrollView>
 
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="199dp"
-        android:layout_height="189dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="268dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/capture" />
-
+    <!--
     <Button
         android:id="@+id/button3"
         android:layout_width="139dp"
@@ -64,4 +112,5 @@
         android:textSize="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+        -->
 </androidx.constraintlayout.widget.ConstraintLayout>

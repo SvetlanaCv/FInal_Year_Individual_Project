@@ -40,12 +40,11 @@ import java.io.File;
 
 public class Main3Activity extends AppCompatActivity {
 
-    private ImageView imageView;
+    ImageView imageView;
     Bitmap originalBitmap;
     Bitmap currentBitmap;
 
-    Button save;
-    Button backButton;
+    Button clar, nash, ging, crem, rise, perp, save, check;
 
     int n = 0;
 
@@ -57,16 +56,57 @@ public class Main3Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
         Intent intent = getIntent();
-        String[] string = (String[])intent.getSerializableExtra("filter list");
         String bitmapName = (String)intent.getSerializableExtra("bitmap name");
+        imageView = findViewById(R.id.imageView);
 
-        imageView = findViewById(R.id.imageView2);
+        try {
+            originalBitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
+            Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+            currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
+            imageView.setImageBitmap(bitmap);
+        }
+        catch( FileNotFoundException e){}
 
-        backButton = findViewById(R.id.button3);
-        backButton.setOnClickListener(new View.OnClickListener() {
+        clar = findViewById(R.id.clar);
+        nash = findViewById(R.id.nash);
+        ging = findViewById(R.id.ging);
+        crem = findViewById(R.id.crem);
+        rise = findViewById(R.id.rise);
+        perp = findViewById(R.id.perp);
+        clar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                back();
+                removeClarendon(null);
+            }
+        });
+        nash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeNashville(null);
+            }
+        });
+        ging.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeGingham(null);
+            }
+        });
+        crem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeCrema(null);
+            }
+        });
+        rise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removeRise(null);
+            }
+        });
+        perp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                removePerpetua(null);
             }
         });
 
@@ -78,46 +118,13 @@ public class Main3Activity extends AppCompatActivity {
             }
         });
 
-        try {
-            originalBitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
-            Bitmap bitmap = originalBitmap;
-            currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
-            imageView.setImageBitmap(bitmap);
-        }
-        catch( FileNotFoundException e){}
-
-        LinearLayout linearlayout = findViewById(R.id.buttonLayout);
-        linearlayout.setOrientation(LinearLayout.VERTICAL);
-
-        for(int i = 0; i<string.length;i++)
-        {
-            LinearLayout linear1 = new LinearLayout(this);
-            linear1.setOrientation(LinearLayout.HORIZONTAL);
-            linearlayout.addView(linear1);
-            Button b = new Button(this);
-            b.setText(string[i]);
-            b.setId(i);
-            b.setTag(string[i]);
-            b.setTextSize(10);
-            b.setPadding(8, 3, 8, 3);
-            b.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
-
-            linear1.addView(b);
-
-            b.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    String tag = v.getTag().toString();
-                    removeFilter(tag);
-                }
-            });
-        }
-    }
-
-    public void back(){
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        check = findViewById(R.id.check);
+        check.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkAll();
+            }
+        });
     }
 
     public void removeFilter(String tag){
@@ -133,7 +140,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void checkAll(){
-        for(int j = 0; j < 1; j++) {
+        for(int j = 2; j < 5; j++) {
             for (int i = 1; i <= 50; i++) {
                 Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
                 Bitmap converted = removePerpetua(bmp);
@@ -510,10 +517,8 @@ public class Main3Activity extends AppCompatActivity {
         for(int i = 0; i < img.rows(); i++){
             for(int j = 0; j <img.cols(); j++){
                 double[] pixel = img.get(i,j);
-                double[] newPixel = new double[3];
-                if(pixel[0]==200 || pixel[1]==200 || pixel[2]==200){
-                    int thing = 0;
-                }
+                double[] newPixel = {pixel[0], pixel[1], pixel[2]};
+
                 if(pixel[0] < 128){ newPixel[0] = (128-(128 - pixel[0])*red_low_ratio); }
                 else if(pixel[0] > 128){ newPixel[0] = (128+(pixel[0]-128)*red_high_ratio); }
                 if(pixel[1] < 128){ newPixel[1] = (128-(128 - pixel[1])*green_low_ratio); }
@@ -526,7 +531,6 @@ public class Main3Activity extends AppCompatActivity {
         return img;
     }
 
-    //in rgb form
     public Mat changeChannel(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_x, double g_p2_x, double b_p2_x, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
@@ -626,7 +630,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void save(){
-        File photoFile = new File(this.getExternalFilesDir(null), "Image" + n + ".jpg");
+        File photoFile = new File(this.getExternalFilesDir(null), "/Image" + n + ".jpg");
         try {
             FileOutputStream out = new FileOutputStream(photoFile);
             Bitmap bitmap = currentBitmap;
@@ -637,6 +641,11 @@ public class Main3Activity extends AppCompatActivity {
             e.printStackTrace();
         }
         n++;
+    }
+
+    public void back() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 /*
     public Bitmap process(Bitmap inputImage) {
