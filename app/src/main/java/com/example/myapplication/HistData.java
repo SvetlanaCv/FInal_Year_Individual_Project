@@ -8,6 +8,9 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import android.graphics.Bitmap;
+import org.opencv.android.Utils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +32,9 @@ public class HistData {
     float HistDataRgb[][];
     float HistDataHsv[][];
 
+    Mat b_hist_rgb = new Mat(), g_hist_rgb = new Mat(), r_hist_rgb = new Mat();
+    Mat b_hist_hsv = new Mat(), g_hist_hsv = new Mat(), r_hist_hsv = new Mat();
+
     HistData(Mat img){
         List<Mat> rgbPlanes = new ArrayList<>();
 
@@ -43,18 +49,14 @@ public class HistData {
         int histSize = 256;
         float[] range = {0, 256};
         MatOfFloat histRange = new MatOfFloat(range);
-        boolean accumulate = false;
 
-        Mat b_hist_rgb = new Mat(), g_hist_rgb = new Mat(), r_hist_rgb = new Mat();
-        Mat b_hist_hsv = new Mat(), g_hist_hsv = new Mat(), r_hist_hsv = new Mat();
+        Imgproc.calcHist(rgbPlanes, new MatOfInt(0), new Mat(), r_hist_rgb, new MatOfInt(histSize), histRange, false);
+        Imgproc.calcHist(rgbPlanes, new MatOfInt(1), new Mat(), g_hist_rgb, new MatOfInt(histSize), histRange, false);
+        Imgproc.calcHist(rgbPlanes, new MatOfInt(2), new Mat(), b_hist_rgb, new MatOfInt(histSize), histRange, false);
 
-        Imgproc.calcHist(rgbPlanes, new MatOfInt(0), new Mat(), r_hist_rgb, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(rgbPlanes, new MatOfInt(1), new Mat(), g_hist_rgb, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(rgbPlanes, new MatOfInt(2), new Mat(), b_hist_rgb, new MatOfInt(histSize), histRange, accumulate);
-
-        Imgproc.calcHist(hsv_planes, new MatOfInt(0), new Mat(), b_hist_hsv,  new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(hsv_planes, new MatOfInt(1), new Mat(), g_hist_hsv,  new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(hsv_planes, new MatOfInt(2), new Mat(), r_hist_hsv,  new MatOfInt(histSize), histRange, accumulate);
+        Imgproc.calcHist(hsv_planes, new MatOfInt(0), new Mat(), b_hist_hsv,  new MatOfInt(histSize), histRange, false);
+        Imgproc.calcHist(hsv_planes, new MatOfInt(1), new Mat(), g_hist_hsv,  new MatOfInt(histSize), histRange, false);
+        Imgproc.calcHist(hsv_planes, new MatOfInt(2), new Mat(), r_hist_hsv,  new MatOfInt(histSize), histRange, false);
 
         int histW = 1024, histH = 800;
         //int binW = (int) Math.round((double) histW / histSize);

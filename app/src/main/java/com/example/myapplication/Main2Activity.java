@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.content.Intent;
 import android.util.Log;
@@ -19,9 +20,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 import android.widget.TextView;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.Serializable;
 import java.util.LinkedList;
+
 import android.widget.Button;
 
 public class Main2Activity extends AppCompatActivity implements Serializable {
@@ -29,9 +34,16 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     private static final String TAG = "Main2Activity";
 
     private Button continueButton;
+    Bitmap bitmap;
     private ImageView imageView;
     private static TextView results;
     private static String[] stringArray;
+
+    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/", "Plain/"};
+    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar", "un"};
+
+    double[] count = {0, 0, 0, 0, 0, 0, 0};
+    double[] count_totals = {6, 6, 6, 6, 6, 6, 6};
 
     LinkedList<String> filterList = new LinkedList<>();
 
@@ -39,14 +51,14 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
+                case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
-                } break;
-                default:
-                {
+                }
+                break;
+                default: {
                     super.onManagerConnected(status);
-                } break;
+                }
+                break;
             }
         }
     };
@@ -66,11 +78,11 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
 
         imageView = findViewById(R.id.imageView);
         try {
-            Bitmap bitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
+            bitmap = BitmapFactory.decodeStream(this.openFileInput(bitmapName));
             Utils.bitmapToMat(bitmap, mat);
             imageView.setImageBitmap(bitmap);
+        } catch (FileNotFoundException e) {
         }
-        catch( FileNotFoundException e){}
         results = findViewById(R.id.textView3);
 
         detection(mat);
@@ -79,7 +91,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         Object[] objectArray = filterList.toArray();
         int length = objectArray.length;
         stringArray = new String[length];
-        for(int i =0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             stringArray[i] = (String) objectArray[i];
         }
 
@@ -97,158 +109,185 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     public void detection(Mat img) {
         HistData data = new HistData(img);
 
-        if(!checkSaturation(data)) {
-            filterList.add("Gingham\n" + checkGingham(data) + "\n");
-            filterList.add("Nashville\n" + checkNashville(data) + "\n");
-            filterList.add("Clarendon\n" + checkClarendon(data) + "\n");
-            filterList.add("Perpetua\n" + checkPerpetua(data) + "\n");
-            filterList.add("Crema\n" + checkCrema(data) + "\n");
-            filterList.add("Rise\n" + checkRise(data) + "\n");
-        }
-        else filterList.add("Black and White Image Detected\nNot reversable");
+        if (!checkSaturation(data)) {
+            checkHists(data);
+            checkPerpetua(data, 0);
+            checkCrema(data, 1);
+            checkGingham(data, 2);
+            checkNashville(data, 3);
+            checkRise(data, 4);
+            checkClarendon(data, 5);
+
+            filterList.add("Perpetua: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Crema: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Gingham: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Nashville: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Rise: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Clarendon: " + count[0]/count_totals[0] + "%\n");
+        } else filterList.add("Black and White Image Detected\nNot reversible");
     }
 
-    private boolean checkSaturation(HistData data){
+    private void checkHists(HistData data) {
+        //String filename = "/HistHSVResults.txt";
+        double largest_r = Double.MIN_VALUE;
+        double largest_g = Double.MIN_VALUE;
+        double largest_b = Double.MIN_VALUE;
+        double largest_h = Double.MIN_VALUE;
+        double largest_s = Double.MIN_VALUE;
+        double largest_v = Double.MIN_VALUE;
+
+        int r_name = 0;
+        int g_name = 0;
+        int b_name = 0;
+        int h_name = 0;
+        int s_name = 0;
+        int v_name = 0;
+
+        for (int j = 0; j < folder.length; j++) {
+            double red_total = 0;
+            double green_total = 0;
+            double blue_total = 0;
+            double hue_total = 0;
+            double sat_total = 0;
+            double val_total = 0;
+
+            for (int i = 1; i <= 100; i++) {
+                Bitmap bmp = getImage("/Images/" + folder[j] + folderName[j] + " (" + i + ")");
+                Mat mat = new Mat();
+                Utils.bitmapToMat(bmp, mat);
+                HistData comparedData = new HistData(mat);
+                double hue = Imgproc.compareHist( data.r_hist_hsv, comparedData.r_hist_hsv, 0 );
+                double sat = Imgproc.compareHist( data.g_hist_hsv, comparedData.g_hist_hsv, 0 );
+                double val = Imgproc.compareHist( data.b_hist_hsv, comparedData.b_hist_hsv, 0 );
+                double red = Imgproc.compareHist( data.r_hist_rgb, comparedData.r_hist_rgb, 0 );
+                double green = Imgproc.compareHist( data.g_hist_rgb, comparedData.g_hist_rgb, 0 );
+                double blue = Imgproc.compareHist( data.b_hist_rgb, comparedData.b_hist_rgb, 0 );
+                red_total += red; green_total += green; blue_total += blue;
+                hue_total += hue; sat_total += sat; val_total += val;
+                //write(i + ": " + red + " " + green + " " + blue + "\n", filename);
+            }
+
+            red_total /= 100; green_total /= 100; blue_total /= 100; hue_total /= 100; sat_total /= 100; val_total /= 100;
+            if(largest_r < red_total) {largest_r = red_total; r_name=j; }
+            if(largest_g < green_total) {largest_g = green_total; g_name=j; }
+            if(largest_b < blue_total) {largest_b = blue_total; b_name=j; }
+            if(largest_h < hue_total) {largest_h = hue_total; h_name=j; }
+            if(largest_s < sat_total) {largest_s = sat_total; s_name=j; }
+            if(largest_v < val_total) {largest_v = val_total; v_name=j; }
+            //write(folder[j] + " " + red_total + " " + green_total + " " + blue_total + "\n", filename);
+            //write("\n", filename);
+        }
+        count[r_name]++;
+        count[g_name]++;
+        count[b_name]++;
+        count[h_name]++;
+        count[s_name]++;
+        count[v_name]++;
+        //write("\n", filename);
+    }
+
+    private void write(String txt, String filename){
+        try {
+            File textFile = new File(this.getExternalFilesDir(null), filename);
+            if (!textFile.exists())
+                textFile.createNewFile();
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(textFile, true ));
+
+            writer.write(txt);
+            writer.close();
+
+            MediaScannerConnection.scanFile(this,
+                    new String[]{textFile.toString()},
+                    null,
+                    null);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private boolean checkSaturation(HistData data) {
         boolean bnw = false;
-        if(data.g_val_hsv[0] < 50 && data.g_val_hsv[1] < 5 && data.g_val_hsv[2] < 5 && data.g_val_hsv[3] < 5 &&
+        if (data.g_val_hsv[0] < 50 && data.g_val_hsv[1] < 5 && data.g_val_hsv[2] < 5 && data.g_val_hsv[3] < 5 &&
                 data.g_val_hsv[4] < 5 && data.g_val_hsv[5] < 5 && data.g_val_hsv[6] < 5 && data.g_val_hsv[7] < 5 &&
                 data.g_val_hsv[8] < 5 && data.g_val_hsv[9] < 5) bnw = true;
         return bnw;
     }
 
-    private String checkPerpetua(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count++;
-        if(data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count++;
-        if(data.HistDataRgb[2][255] < 60) count++;
-        if(data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count++;
-        if(data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count++;
-        if(data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count++;
-        if(data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count++;
-        if(data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count++;
-        if(count < 2)  result = "Extremely Unlikely";
-        else if(count < 4) result = "Unlikely";
-        else if(count < 6) result = "Likely";
-        else if(count <= 8) result = "Extremely Likely";
-
-        return result;
+    private void checkPerpetua(HistData data, int index) {
+        if (data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count[index]++;
+        if (data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count[index]++;
+        if (data.HistDataRgb[2][255] < 60) count[index]++;
+        if (data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count[index]++;
+        if (data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count[index]++;
+        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count[index]++;
+        if (data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count[index]++;
+        if (data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count[index]++;
+        count_totals[index] += 8;
     }
 
-    private String checkCrema(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.out_rgb[2] <= 250) count++;
-        if(data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count++;
-        if(data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count++;
-        if(data.b_val_rgb[9] < 80) count++;
-        if(data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count++;
-        if(data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count++;
-        if(data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count++;
-
-        if(count < 1)  result = "Extremely Unlikely";
-        else if(count < 3) result = "Unlikely";
-        else if(count < 5) result = "Likely";
-        else if(count <= 7) result = "Extremely Likely";
-
-        return result;
+    private void checkCrema(HistData data, int index) {
+        if (data.out_rgb[2] <= 250) count[index]++;
+        if (data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count[index]++;
+        if (data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count[index]++;
+        if (data.b_val_rgb[9] < 80) count[index]++;
+        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count[index]++;
+        if (data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count[index]++;
+        if (data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count[index]++;
+        count_totals[index] += 7;
     }
 
-    private String checkRise(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count++;
-        if(data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count++;
-        if(data.HistDataRgb[2][255] < 50) count++;
-        if(data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count++;
-        if(data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count++;
-        if(data.HistDataHsv[0][0] < 1) count++;
-        if(data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count++;
-        if(data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count++;
-
-        if(count < 2)  result = "Extremely Unlikely";
-        else if(count < 4) result = "Unlikely";
-        else if(count < 6) result = "Likely";
-        else if(count <= 8) result = "Extremely Likely";
-
-        return result;
+    private void checkGingham(HistData data, int index) {
+        if (data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count[index]++;
+        if (data.in_hsv[0] > 30) count[index]++;
+        if (data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count[index]++;
+        if (data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count[index]++;
+        if (data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count[index]++;
+        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count[index]++;
+        if (data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count[index]++;
+        if (data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5)  count[index]++;
+        count_totals[index] += 8;
     }
 
-    private String checkClarendon(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.HistDataRgb[1][0] < 200) count++;
-        if(data.HistDataRgb[0][255] < 600) count++;
-        if(data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count++;
-        if(data.HistDataHsv[0][0] < 1) count++;
-        if(data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count++;
-
-        if(count < 1)  result = "Extremely Unlikely";
-        else if(count < 3) result = "Unlikely";
-        else if(count <= 5) result = "Likely";
-
-        return result;
+    private void checkNashville(HistData data, int index) {
+        if (data.in_rgb[0] < 10) count[index]++;
+        if (data.out_rgb[1] < 250) count[index]++;
+        if (data.HistDataRgb[2][0] < 1) count[index]++;
+        if (data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count[index]++;
+        if (data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count[index]++;
+        if (data.b_val_hsv[2] < 200) count[index]++;
+        count_totals[index] += 6;
     }
 
-    private String checkNashville(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.in_rgb[0] < 10) count++;
-        if(data.out_rgb[1] < 250) count++;
-        if(data.HistDataRgb[2][0] < 1) count++;
-        if(data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count++;
-        if(data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count++;
-        if(data.b_val_hsv[2] < 200) count++;
-
-        if(count < 2)  result = "Extremely Unlikely";
-        else if(count < 6) result = "Likely";
-        else if(count <= 8) result = "Extremely Likely";
-
-        return result;
+    private void checkRise(HistData data, int index) {
+        if (data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count[index]++;
+        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count[index]++;
+        if (data.HistDataRgb[2][255] < 50) count[index]++;
+        if (data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count[index]++;
+        if (data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count[index]++;
+        if (data.HistDataHsv[0][0] < 1) count[index]++;
+        if (data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count[index]++;
+        if (data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count[index]++;
+        count_totals[index] += 8;
     }
 
-    private String checkGingham(HistData data){
-        int count = 0;
-        String result = "";
-
-        if(data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count++;
-        if(data.in_hsv[0] > 30) count++;
-        if(data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count++;
-        if(data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count++;
-        if(data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count++;
-        if(data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count++;
-        if(data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count++;
-        if(data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5) {
-            result = "Extremely Likely";
-            count++;
-        }
-        if(data.r_val_hsv[0] < 5 && data.r_val_hsv[9] < 10 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5) count++;
-
-        if(result.equals("")) {
-            if (count < 2) result = "Extremely Unlikely";
-            else if (count < 4) result = "Unlikely";
-            else if (count < 6) result = "Likely";
-            else if (count <= 8) result = "Extremely Likely";
-        }
-
-        return result;
+    private void checkClarendon(HistData data, int index) {
+        if (data.HistDataRgb[1][0] < 200) count[index]++;
+        if (data.HistDataRgb[0][255] < 600) count[index]++;
+        if (data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count[index]++;
+        if (data.HistDataHsv[0][0] < 1) count[index]++;
+        if (data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count[index]++;
+        count_totals[index] += 5;
     }
 
-    public void next_Screen(String[] list, String name){
+    public void next_Screen(String[] list, String name) {
         Intent intent = new Intent(this, Main3Activity.class);
         intent.putExtra("filter list", list);
         intent.putExtra("bitmap name", name);
         startActivity(intent);
     }
 
-    public static void print_results(String[] list){
+    public static void print_results(String[] list) {
         String string = "";
-        if(list.length != 0) {
+        if (list.length != 0) {
             for (int i = 0; i < list.length - 1; i++) {
                 string += list[i];
                 string += "\n";
@@ -258,9 +297,22 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         results.setText(string);
     }
 
+    private Bitmap getImage(String name) {
+        String photoPath = this.getExternalFilesDir(null) + name + ".jpg";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
+        if (bmp == null) {
+            photoPath = this.getExternalFilesDir(null) + name + ".jpeg";
+            options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            bmp = BitmapFactory.decodeFile(photoPath, options);
+        }
+        return bmp;
+    }
+
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");

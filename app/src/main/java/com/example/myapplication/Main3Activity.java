@@ -33,8 +33,6 @@ import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
 
-import javax.xml.transform.Source;
-
 import java.io.FileOutputStream;
 import java.io.File;
 
@@ -44,12 +42,12 @@ public class Main3Activity extends AppCompatActivity {
     Bitmap originalBitmap;
     Bitmap currentBitmap;
 
-    Button clar, nash, ging, crem, rise, perp, save, check;
+    Button clar, nash, ging, crem, rise, perp, save, check, hist;
 
     int n = 0;
 
-    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/"};
-    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar"};
+    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/", "Plain/"};
+    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar", "un"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,22 +123,18 @@ public class Main3Activity extends AppCompatActivity {
                 checkAll();
             }
         });
-    }
 
-    public void removeFilter(String tag){
-        if(tag.equals("Clarendon")) removeClarendon(null);
-        if(tag.equals("Gingham")) removeGingham(null);
-        if(tag.equals("rgb hist")) showHist();
-        if(tag.equals("Nashville")) removeNashville(null);
-        if(tag.equals("Original")) showOriginal();
-        if(tag.equals("Rise")) removeRise(null);
-        if(tag.equals("Crema")) removeCrema(null);
-        if(tag.equals("Perpetua")) removePerpetua(null);
-        if(tag.equals("Check All")) checkAll();
+        hist = findViewById(R.id.hist);
+        hist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showHist();
+            }
+        });
     }
 
     public void checkAll(){
-        for(int j = 2; j < 5; j++) {
+        for(int j = 2; j < folder.length-1; j++) {
             for (int i = 1; i <= 50; i++) {
                 Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
                 Bitmap converted = removePerpetua(bmp);
@@ -315,16 +309,21 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void showHist(){
-        Bitmap bitmap = currentBitmap.copy(currentBitmap.getConfig(), true);
-        Mat mat = new Mat();
-        Utils.bitmapToMat(bitmap, mat);
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+        for(int j = 0; j < folder.length; j++) {
+            for (int i = 1; i <= 100; i++) {
+                Bitmap bitmap = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
+                Mat mat = new Mat();
+                Utils.bitmapToMat(bitmap, mat);
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
-        Mat hist = hist(mat);
-        Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
-        Utils.matToBitmap(hist, bmp);
-        currentBitmap = bmp;
-        imageView.setImageBitmap(bmp);
+                Mat hist = hist(mat);
+                Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
+                Utils.matToBitmap(hist, bmp);
+                currentBitmap = bmp;
+                saveImage(bmp, "/RGB Hists/" + folder[j] +  folderName[j] + i + ".jpg");
+                imageView.setImageBitmap(bmp);
+            }
+        }
     }
 
     public Bitmap removeRise(Bitmap bmp) {
