@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
     }
 
     private void histTestScreen(){
-        Intent i = new Intent(this, TestScreen.class);
+        Intent i = new Intent(this, HistTestScreen.class);
         startActivity(i);
     }
 

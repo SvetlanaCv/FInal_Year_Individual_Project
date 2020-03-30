@@ -6,4 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".HistTestScreen">
 
+    <TextView
+        android:id="@+id/results"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:text="TP:\nTN:\nFP:\nFN:\n"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="50dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

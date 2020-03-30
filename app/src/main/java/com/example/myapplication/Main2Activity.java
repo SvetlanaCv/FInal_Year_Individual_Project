@@ -39,11 +39,8 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
     private static TextView results;
     private static String[] stringArray;
 
-    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/", "Plain/"};
-    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar", "un"};
-
-    double[] count = {0, 0, 0, 0, 0, 0, 0};
-    double[] count_totals = {6, 6, 6, 6, 6, 6, 6};
+    String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/"};
+    String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar"};
 
     LinkedList<String> filterList = new LinkedList<>();
 
@@ -110,25 +107,22 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         HistData data = new HistData(img);
 
         if (!checkSaturation(data)) {
-            checkHists(data);
-            checkPerpetua(data, 0);
-            checkCrema(data, 1);
-            checkGingham(data, 2);
-            checkNashville(data, 3);
-            checkRise(data, 4);
-            checkClarendon(data, 5);
+            double[] hist_results = checkHists(data);
+            double[] filter_results = {checkPerpetua(data, hist_results[0]), checkCrema(data, hist_results[1]), checkGingham(data, hist_results[2]), checkNashville(data, hist_results[3]), checkRise(data, hist_results[4]), checkClarendon(data, hist_results[5])};
+            double[] total_results = {0,0,0,0,0,0};
+            for(int j = 0; j < 6; j++) total_results[j] += filter_results[j];
 
-            filterList.add("Perpetua: " + count[0]/count_totals[0] + "%\n");
-            filterList.add("Crema: " + count[0]/count_totals[0] + "%\n");
-            filterList.add("Gingham: " + count[0]/count_totals[0] + "%\n");
-            filterList.add("Nashville: " + count[0]/count_totals[0] + "%\n");
-            filterList.add("Rise: " + count[0]/count_totals[0] + "%\n");
-            filterList.add("Clarendon: " + count[0]/count_totals[0] + "%\n");
+            filterList.add("Perpetua: " + total_results[0] + "%\n");
+            filterList.add("Crema: " + total_results[1] + "%\n");
+            filterList.add("Gingham: " + total_results[2] + "%\n");
+            filterList.add("Nashville: " + total_results[3] + "%\n");
+            filterList.add("Rise: " + total_results[4] + "%\n");
+            filterList.add("Clarendon: " + total_results[5] + "%\n");
         } else filterList.add("Black and White Image Detected\nNot reversible");
     }
 
-    private void checkHists(HistData data) {
-        //String filename = "/HistHSVResults.txt";
+    private double[] checkHists(HistData data) {
+        double[] count = {0, 0, 0, 0, 0, 0, 0};
         double largest_r = Double.MIN_VALUE;
         double largest_g = Double.MIN_VALUE;
         double largest_b = Double.MIN_VALUE;
@@ -164,7 +158,6 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
                 double blue = Imgproc.compareHist( data.b_hist_rgb, comparedData.b_hist_rgb, 0 );
                 red_total += red; green_total += green; blue_total += blue;
                 hue_total += hue; sat_total += sat; val_total += val;
-                //write(i + ": " + red + " " + green + " " + blue + "\n", filename);
             }
 
             red_total /= 100; green_total /= 100; blue_total /= 100; hue_total /= 100; sat_total /= 100; val_total /= 100;
@@ -174,8 +167,6 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
             if(largest_h < hue_total) {largest_h = hue_total; h_name=j; }
             if(largest_s < sat_total) {largest_s = sat_total; s_name=j; }
             if(largest_v < val_total) {largest_v = val_total; v_name=j; }
-            //write(folder[j] + " " + red_total + " " + green_total + " " + blue_total + "\n", filename);
-            //write("\n", filename);
         }
         count[r_name]++;
         count[g_name]++;
@@ -183,25 +174,7 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         count[h_name]++;
         count[s_name]++;
         count[v_name]++;
-        //write("\n", filename);
-    }
-
-    private void write(String txt, String filename){
-        try {
-            File textFile = new File(this.getExternalFilesDir(null), filename);
-            if (!textFile.exists())
-                textFile.createNewFile();
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(textFile, true ));
-
-            writer.write(txt);
-            writer.close();
-
-            MediaScannerConnection.scanFile(this,
-                    new String[]{textFile.toString()},
-                    null,
-                    null);
-        } catch (Exception e) { e.printStackTrace(); }
+        return count;
     }
 
     private boolean checkSaturation(HistData data) {
@@ -212,70 +185,82 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
         return bnw;
     }
 
-    private void checkPerpetua(HistData data, int index) {
-        if (data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count[index]++;
-        if (data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count[index]++;
-        if (data.HistDataRgb[2][255] < 60) count[index]++;
-        if (data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count[index]++;
-        if (data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count[index]++;
-        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count[index]++;
-        if (data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count[index]++;
-        if (data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count[index]++;
-        count_totals[index] += 8;
+    private double checkPerpetua(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 8;
+        if (data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count++;
+        if (data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count++;
+        if (data.HistDataRgb[2][255] < 60) count++;
+        if (data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count++;
+        if (data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count++;
+        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count++;
+        if (data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count++;
+        if (data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count++;
+        return count/total;
     }
 
-    private void checkCrema(HistData data, int index) {
-        if (data.out_rgb[2] <= 250) count[index]++;
-        if (data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count[index]++;
-        if (data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count[index]++;
-        if (data.b_val_rgb[9] < 80) count[index]++;
-        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count[index]++;
-        if (data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count[index]++;
-        if (data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count[index]++;
-        count_totals[index] += 7;
+    private double checkCrema(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 8;
+        if (data.out_rgb[2] <= 250) count++;
+        if (data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count++;
+        if (data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count++;
+        if (data.b_val_rgb[9] < 80) count++;
+        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count++;
+        if (data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count++;
+        if (data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count++;
+        return count/total;
     }
 
-    private void checkGingham(HistData data, int index) {
-        if (data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count[index]++;
-        if (data.in_hsv[0] > 30) count[index]++;
-        if (data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count[index]++;
-        if (data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count[index]++;
-        if (data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count[index]++;
-        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count[index]++;
-        if (data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count[index]++;
-        if (data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5)  count[index]++;
-        count_totals[index] += 8;
+    private double checkGingham(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 8;
+        if (data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count++;
+        if (data.in_hsv[0] > 30) count++;
+        if (data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count++;
+        if (data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count++;
+        if (data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count++;
+        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count++;
+        if (data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count++;
+        if (data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5)  count++;
+        return count/total;
     }
 
-    private void checkNashville(HistData data, int index) {
-        if (data.in_rgb[0] < 10) count[index]++;
-        if (data.out_rgb[1] < 250) count[index]++;
-        if (data.HistDataRgb[2][0] < 1) count[index]++;
-        if (data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count[index]++;
-        if (data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count[index]++;
-        if (data.b_val_hsv[2] < 200) count[index]++;
-        count_totals[index] += 6;
+    private double checkNashville(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 6;
+        if (data.in_rgb[0] < 10) count++;
+        if (data.out_rgb[1] < 250) count++;
+        if (data.HistDataRgb[2][0] < 1) count++;
+        if (data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count++;
+        if (data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count++;
+        if (data.b_val_hsv[2] < 200) count++;
+        return count/total;
     }
 
-    private void checkRise(HistData data, int index) {
-        if (data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count[index]++;
-        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count[index]++;
-        if (data.HistDataRgb[2][255] < 50) count[index]++;
-        if (data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count[index]++;
-        if (data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count[index]++;
-        if (data.HistDataHsv[0][0] < 1) count[index]++;
-        if (data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count[index]++;
-        if (data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count[index]++;
-        count_totals[index] += 8;
+    private double checkRise(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 8;
+        if (data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count++;
+        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count++;
+        if (data.HistDataRgb[2][255] < 50) count++;
+        if (data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count++;
+        if (data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count++;
+        if (data.HistDataHsv[0][0] < 1) count++;
+        if (data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count++;
+        if (data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count++;
+        return count/total;
     }
 
-    private void checkClarendon(HistData data, int index) {
-        if (data.HistDataRgb[1][0] < 200) count[index]++;
-        if (data.HistDataRgb[0][255] < 600) count[index]++;
-        if (data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count[index]++;
-        if (data.HistDataHsv[0][0] < 1) count[index]++;
-        if (data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count[index]++;
-        count_totals[index] += 5;
+    private double checkClarendon(HistData data, double hist) {
+        double count = hist;
+        double total = 6 + 5;
+        if (data.HistDataRgb[1][0] < 200) count++;
+        if (data.HistDataRgb[0][255] < 600) count++;
+        if (data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count++;
+        if (data.HistDataHsv[0][0] < 1) count++;
+        if (data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count++;
+        return count/total;
     }
 
     public void next_Screen(String[] list, String name) {
