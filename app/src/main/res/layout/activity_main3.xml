@@ -4,32 +4,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     tools:context=".Main3Activity">
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/orig"
         app:srcCompat="@drawable/capture" />
+
+    <Button
+        android:id="@+id/orig"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:text="Original"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@id/scroll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <ScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="300dp"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView">
+        app:layout_constraintTop_toBottomOf="@+id/orig">
 
         <LinearLayout
             android:id="@+id/buttonLayout"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="match_parent"
             android:gravity="top"
             android:orientation="vertical"
             android:paddingLeft="16dp"
@@ -39,47 +52,62 @@
                 android:id="@+id/clar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Clarendon" />
 
             <Button
                 android:id="@+id/nash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Nashville" />
 
             <Button
                 android:id="@+id/ging"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Gingham" />
 
             <Button
                 android:id="@+id/crem"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Crema" />
 
             <Button
                 android:id="@+id/rise"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Rise" />
 
             <Button
                 android:id="@+id/perp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="#FFFFFF"
                 android:text="Perpetua" />
 
+            <!--
             <Button
                 android:id="@+id/save"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
                 android:text="save" />
 
             <Button
                 android:id="@+id/check"
                 android:layout_width="match_parent"
+                android:background="@color/colorPrimaryDark"
                 android:layout_height="wrap_content"
                 android:text="check all" />
 
@@ -87,7 +115,9 @@
                 android:id="@+id/hist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
                 android:text="hist" />
+                -->
         </LinearLayout>
 
     </ScrollView>

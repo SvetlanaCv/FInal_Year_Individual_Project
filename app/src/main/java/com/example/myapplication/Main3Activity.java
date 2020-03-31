@@ -42,7 +42,7 @@ public class Main3Activity extends AppCompatActivity {
     Bitmap originalBitmap;
     Bitmap currentBitmap;
 
-    Button clar, nash, ging, crem, rise, perp, save, check, hist;
+    Button clar, nash, ging, crem, rise, perp, orig, save, check, hist;
 
     int n = 0;
 
@@ -108,6 +108,16 @@ public class Main3Activity extends AppCompatActivity {
             }
         });
 
+
+        orig = findViewById(R.id.orig);
+        orig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showOriginal();
+            }
+        });
+
+        /*
         save = findViewById(R.id.save);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,10 +141,12 @@ public class Main3Activity extends AppCompatActivity {
                 showHist();
             }
         });
+
+         */
     }
 
     public void checkAll(){
-        for(int j = 2; j < folder.length-1; j++) {
+        for(int j = 1; j < 2; j++) {
             for (int i = 1; i <= 50; i++) {
                 Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
                 Bitmap converted = removePerpetua(bmp);
@@ -233,7 +245,9 @@ public class Main3Activity extends AppCompatActivity {
         */
 
         //Reverse
-        mat = changeChannel(mat, 10,10,0,0,20,10,255,255,240,255, 255,255, false);
+        mat = equaliseHistManual(mat, 20,20,20,240,240,240);
+        mat = hue_saturation(mat, 1f, 1.3f);
+        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,220, 255,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -288,7 +302,8 @@ public class Main3Activity extends AppCompatActivity {
          */
 
         //Reverse
-        mat = equaliseHistManual(mat, 0,0,60,256,240,210);
+        mat = equaliseHistManual(mat, 0,0,70,255,240,190);
+        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,230,255,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -337,9 +352,10 @@ public class Main3Activity extends AppCompatActivity {
         //Reverse
         //Mat mask = vignette(mat);
         //Core.add(mat, mask, mat);
-        mat = equaliseHistManual(mat, 30, 30,30,256,256,256);
-        mat = changeChannel(mat, 20,0,0,0,0,0,  255,255,255, 220,220,255, false);
-
+        mat = equaliseHistManual(mat, 40, 40,40,255,255,255);
+        mat = changeChannel(mat, 20,0,0,0,0,0,  255,255,255, 240,240,255, false);
+        mat = changeChannel(mat, 40,0,0,0,0,0,  255,255,255, 255,255,255, false);
+        mat = hue_saturation(mat, 1f, 0.8f);
         /*
         //Imitate
         //mat = changeChannel(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
@@ -643,8 +659,7 @@ public class Main3Activity extends AppCompatActivity {
     }
 
     public void back() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        finish();
     }
 /*
     public Bitmap process(Bitmap inputImage) {

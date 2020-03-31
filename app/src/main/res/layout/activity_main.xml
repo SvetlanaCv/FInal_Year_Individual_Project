@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     tools:context=".MainActivity">
 
     <Button
@@ -18,13 +19,12 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginBottom="0dp"
-        android:background="#30AA30"
+        android:textColor="#FFFFFF"
+        android:background="@color/colorPrimaryDark"
         android:text="Select Photo"
-        android:textSize="30dp" />
+        android:textSize="40dp" />
 
+    <!--
     <Button
         android:id="@+id/analysis"
         android:layout_width="147dp"
@@ -93,5 +93,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintStart_toStartOf="parent" />
+        -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

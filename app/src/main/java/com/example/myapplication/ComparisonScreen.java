@@ -34,7 +34,7 @@ public class ComparisonScreen extends AppCompatActivity {
         super.onResume();
         StringBuilder sb = new StringBuilder();
 
-        for(int j = 0; j < 1; j++){
+        for(int j = 1; j < 2; j++){
             int improvements = 0;
             for(int i = 1; i <= 50; i++) {
                 Bitmap original = getImage("/Images/Plain/un (" + i + ")");

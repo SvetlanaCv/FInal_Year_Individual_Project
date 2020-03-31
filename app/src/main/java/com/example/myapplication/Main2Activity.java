@@ -27,11 +27,15 @@ import java.io.FileWriter;
 import java.io.Serializable;
 import java.util.LinkedList;
 
+import java.text.DecimalFormat;
+
 import android.widget.Button;
 
 public class Main2Activity extends AppCompatActivity implements Serializable {
 
     private static final String TAG = "Main2Activity";
+
+    private static DecimalFormat df = new DecimalFormat("0.00");
 
     private Button continueButton;
     Bitmap bitmap;
@@ -112,12 +116,13 @@ public class Main2Activity extends AppCompatActivity implements Serializable {
             double[] total_results = {0,0,0,0,0,0};
             for(int j = 0; j < 6; j++) total_results[j] += filter_results[j];
 
-            filterList.add("Perpetua: " + total_results[0] + "%\n");
-            filterList.add("Crema: " + total_results[1] + "%\n");
-            filterList.add("Gingham: " + total_results[2] + "%\n");
-            filterList.add("Nashville: " + total_results[3] + "%\n");
-            filterList.add("Rise: " + total_results[4] + "%\n");
-            filterList.add("Clarendon: " + total_results[5] + "%\n");
+            filterList.add("\nTraits Found:\n");
+            filterList.add("Perpetua: " + df.format(total_results[0]) + "%");
+            filterList.add("Crema: " + df.format(total_results[1]) + "%");
+            filterList.add("Gingham: " + df.format(total_results[2]) + "%");
+            filterList.add("Nashville: " + df.format(total_results[3]) + "%");
+            filterList.add("Rise: " + df.format(total_results[4]) + "%");
+            filterList.add("Clarendon: " + df.format(total_results[5]) + "%");
         } else filterList.add("Black and White Image Detected\nNot reversible");
     }
 

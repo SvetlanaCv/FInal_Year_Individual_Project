@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
             }
         });
 
+        /*
         analysis = findViewById(R.id.analysis);
         analysis.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                 comparisonScreen();
             }
         });
+
+         */
     }
 
     private void comparisonScreen(){
