@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
-import android.graphics.ImageDecoder;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -19,8 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.Button;
 import android.view.View;
 
@@ -36,15 +33,16 @@ import org.opencv.core.Size;
 import java.io.FileOutputStream;
 import java.io.File;
 
+/*
+    This screen performs filter reversal operations
+ */
 public class Main3Activity extends AppCompatActivity {
 
     ImageView imageView;
     Bitmap originalBitmap;
     Bitmap currentBitmap;
 
-    Button clar, nash, ging, crem, rise, perp, orig, save, check, hist;
-
-    int n = 0;
+    Button clar, nash, ging, crem, rise, perp, orig;
 
     String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/", "Plain/"};
     String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar", "un"};
@@ -108,7 +106,6 @@ public class Main3Activity extends AppCompatActivity {
             }
         });
 
-
         orig = findViewById(R.id.orig);
         orig.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,80 +113,17 @@ public class Main3Activity extends AppCompatActivity {
                 showOriginal();
             }
         });
-
-        /*
-        save = findViewById(R.id.save);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                save();
-            }
-        });
-
-        check = findViewById(R.id.check);
-        check.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAll();
-            }
-        });
-
-        hist = findViewById(R.id.hist);
-        hist.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showHist();
-            }
-        });
-
-         */
     }
 
-    public void checkAll(){
-        for(int j = 1; j < 2; j++) {
-            for (int i = 1; i <= 50; i++) {
-                Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
-                Bitmap converted = removePerpetua(bmp);
-                if(j==1) converted = removeCrema(bmp);
-                if(j==2) converted = removeGingham(bmp);
-                if(j==3) converted = removeNashville(bmp);
-                if(j==4) converted = removeRise(bmp);
-                if(j==5) converted = removeClarendon(bmp);
-                saveImage(converted, "/Reversed/" + folder[j] +  folderName[j] + i + ".jpg");
-                Log.d("Reverse", folderName[j] + i);
-            }
-        }
+    //show the given image without changes
+    public void showOriginal(){
+        imageView.setImageBitmap(originalBitmap);
+        currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
     }
 
-    private Bitmap getImage(String name){
-        String photoPath = this.getExternalFilesDir(null) + name + ".jpg";
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
-        if(bmp==null){
-            photoPath = this.getExternalFilesDir(null) + name + ".jpeg";
-            options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            bmp = BitmapFactory.decodeFile(photoPath, options);
-        }
-        return bmp;
-    }
-
-    public String saveImage(Bitmap photo, String name){
-        File photoFile = new File(this.getExternalFilesDir(null), name);
-        try {
-            if (!photoFile.exists()) photoFile.createNewFile();
-            FileOutputStream out = new FileOutputStream(photoFile);
-            Bitmap bitmap = photo.copy(photo.getConfig(), true);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            Log.e("ReadWriteFile", "Unable to write data.");
-        }
-        return name;
-    }
-
+    /*
+        Reversal functions
+     */
     public Bitmap removePerpetua(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
         if(bmp!=null) bitmap = bmp;
@@ -202,26 +136,11 @@ public class Main3Activity extends AppCompatActivity {
         double[] red = {15, -0.387, 0.023, -0.000116, .00000018};
         double[] green = {15, 0.851, 0.003488, -0.000013, 0};
         double[] blue = {18, 0.49, 0.0051, -.0000133, 0};
-        mat = applyCubic(mat, red, green, blue);
+        mat = nonlinearFunction(mat, red, green, blue);
          */
-
-        /*
-        Bitmap icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.perpetua_mask);
-        Mat icon_mat = new Mat();
-        Utils.bitmapToMat(icon, icon_mat);
-        Imgproc.cvtColor(icon_mat, icon_mat, Imgproc.COLOR_RGBA2RGB);
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-        Imgproc.resize(icon_mat, icon_mat, new Size(mat.width(), mat.height()), 0, 0);
-        Core.subtract(mat, icon_mat, mat);
 
         //Reverse
-        double[] red = {0, 0.289, 0.0332, -0.000256, .000000539};
-        double[] green = {0, 0.289, 0.0332, -0.000256, .000000539};
-        double[] blue = {0, 0.289, 0.0332, -0.000256, .000000539};
-        mat = applyCubic(mat, red, green, blue);
-
-         */
-        mat = changeChannel(mat, 0,0,0,10,0,0,255,255,255,255,235,255, false);
+        mat = linearFunction(mat, 0,0,0,10,0,0,255,255,255,255,235,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
@@ -239,51 +158,22 @@ public class Main3Activity extends AppCompatActivity {
 
         /*
         //Imitate
-        mat = changeChannel(mat, 0,0,0, 35, 0,0,230, 255,255,255,255,255,false);
+        mat = linearFunction(mat, 0,0,0, 35, 0,0,230, 255,255,255,255,255,false);
         mat = hue_saturation(mat, 1f,0.7f);
-        mat = changeChannel(mat, 0,0,0, 0, 0,0,255, 255,255,230,240,240,false);
+        mat = linearFunction(mat, 0,0,0, 0, 0,0,255, 255,255,230,240,240,false);
         */
 
         //Reverse
         mat = equaliseHistManual(mat, 20,20,20,240,240,240);
         mat = hue_saturation(mat, 1f, 1.3f);
-        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,220, 255,255, false);
+        mat = linearFunction(mat, 0,0,0,0,0,0,255,255,255,220, 255,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
         return bitmap;
     }
-
-    public Mat vignette(Mat mat) {
-        Mat newMat = new Mat(mat.size(), mat.type(), new Scalar(0,0,0));
-        double maxDist = Math.sqrt(Math.pow((0 - newMat.cols() / 2), 2) + Math.pow((0 - newMat.rows() / 2), 2));
-        Point point = new Point(newMat.cols() / 2, newMat.rows() / 2);
-        for(int i = 0; i < maxDist; i+=2) {
-            double val = (60)-i*(60/maxDist);
-            Scalar colour = new Scalar(val, val, val);
-            for(int j = i; j < i+2; j++) {
-                Size size = new Size(maxDist - j, maxDist - j);
-                Imgproc.ellipse(newMat,
-                        point,
-                        size,
-                        0.0,
-                        0.0,
-                        360.0,
-                        colour,
-                        1,
-                        4,
-                        0);
-            }
-        }
-        return newMat;
-    }
-
-    public void showOriginal(){
-        imageView.setImageBitmap(originalBitmap);
-        currentBitmap = originalBitmap.copy(originalBitmap.getConfig(), true);;
-    }
-
+    
     public Bitmap removeNashville(Bitmap bmp){
         Bitmap bitmap = originalBitmap.copy(originalBitmap.getConfig(), true);
         if(bmp!=null) bitmap = bmp;
@@ -293,52 +183,22 @@ public class Main3Activity extends AppCompatActivity {
 
         /*
         //Imitate
-        Mat conv = changeChannel(mat, 0, 0, 0, 0, 133,35, false);
+        Mat conv = linearFunction(mat, 0, 0, 0, 0, 133,35, false);
         Mat conv2 = contrast_brightness(conv, 1.2f, 0f);
-        Mat conv3 = changeChannel(conv2, 0, 88, 13, 0, 0,0, false);
+        Mat conv3 = linearFunction(conv2, 0, 88, 13, 0, 0,0, false);
         double[] mask = {250,223,182};
         Mat conv4 = apply_mask(conv3, mask, 1, false);
-        Mat conv5 = changeChannel(conv4, 0, 0, 0, 0, 50,0, false);
+        Mat conv5 = linearFunction(conv4, 0, 0, 0, 0, 50,0, false);
          */
 
         //Reverse
         mat = equaliseHistManual(mat, 0,0,70,255,240,190);
-        mat = changeChannel(mat, 0,0,0,0,0,0,255,255,255,230,255,255, false);
+        mat = linearFunction(mat, 0,0,0,0,0,0,255,255,255,230,255,255, false);
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
         return bitmap;
-    }
-
-    public Mat equalize(Mat img, boolean red, boolean green, boolean blue){
-        ArrayList<Mat> channels = new ArrayList<>(3);
-        Core.split(img, channels);
-
-        if(red) Imgproc.equalizeHist( channels.get(0), channels.get(0) );
-        if(green) Imgproc.equalizeHist( channels.get(1), channels.get(1) );
-        if(blue) Imgproc.equalizeHist( channels.get(2), channels.get(2) );
-
-        Core.merge(channels, img);
-        return img;
-    }
-
-    public void showHist(){
-        for(int j = 0; j < folder.length; j++) {
-            for (int i = 1; i <= 100; i++) {
-                Bitmap bitmap = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
-                Mat mat = new Mat();
-                Utils.bitmapToMat(bitmap, mat);
-                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
-
-                Mat hist = hist(mat);
-                Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
-                Utils.matToBitmap(hist, bmp);
-                currentBitmap = bmp;
-                saveImage(bmp, "/RGB Hists/" + folder[j] +  folderName[j] + i + ".jpg");
-                imageView.setImageBitmap(bmp);
-            }
-        }
     }
 
     public Bitmap removeRise(Bitmap bmp) {
@@ -350,15 +210,14 @@ public class Main3Activity extends AppCompatActivity {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
 
         //Reverse
-        //Mat mask = vignette(mat);
-        //Core.add(mat, mask, mat);
         mat = equaliseHistManual(mat, 40, 40,40,255,255,255);
-        mat = changeChannel(mat, 20,0,0,0,0,0,  255,255,255, 240,240,255, false);
-        mat = changeChannel(mat, 40,0,0,0,0,0,  255,255,255, 255,255,255, false);
+        mat = linearFunction(mat, 20,0,0,0,0,0,  255,255,255, 240,240,255, false);
+        mat = linearFunction(mat, 40,0,0,0,0,0,  255,255,255, 255,255,255, false);
         mat = hue_saturation(mat, 1f, 0.8f);
+
         /*
         //Imitate
-        //mat = changeChannel(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
+        mat = linearFunction(mat, 0, 0, 0, 60, 16, 12, 222, 237, 220, false);
         Mat mask = vignette(mat);
         Core.subtract(mat, mask, mat);
         */
@@ -381,32 +240,20 @@ public class Main3Activity extends AppCompatActivity {
         double[] red = {0, 1.2786, -.004691, 0.0000141, 0};
         double[] green = {0.1364955, 1.24768, -0.006457, 0.00002566, -0.0000000164};
         double[] blue = {0, 1.5749, -0.0109, .000034, 0};
-        mat = applyCubic(mat, red, green, blue);
+        mat = nonlinearFunction(mat, red, green, blue);
+
         /*
         //Imitate
         double[] red = {0, 0.629, 0.0047, -0.0000127, 0};
         double[] green = {0, -1.03, 0.0423, -0.000244, 0.000000429};
         double[] blue = {0, -0.616, 0.03646, -.0002097, 0.000000359};
-        mat = applyCubic(mat, red, green, blue);
+        mat = nonlinearFunction(mat, red, green, blue);
          */
 
         Utils.matToBitmap(mat, bitmap);
         currentBitmap = bitmap.copy(bitmap.getConfig(), true);
         imageView.setImageBitmap(bitmap);
         return bitmap;
-    }
-
-    public Mat applyCubic(Mat img, double[] red, double[] green, double[] blue){
-        for(int i = 0; i < img.rows(); i++){
-            for(int j = 0; j < img.cols(); j++){
-                double newRed = red[0] + red[1]*img.get(i,j)[0] + red[2]*img.get(i,j)[0]*img.get(i,j)[0] + red[3]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0] + red[4]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0];
-                double newGreen = green[0] + green[1]*img.get(i,j)[1] + green[2]*img.get(i,j)[1]*img.get(i,j)[1] + green[3]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1] + green[4]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1];
-                double newBlue = blue[0] + blue[1]*img.get(i,j)[2] + blue[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[3]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[4]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2];
-                double[] all = {newRed, newGreen, newBlue};
-                img.put(i,j, all);
-            }
-        }
-        return img;
     }
 
     public Bitmap removeGingham(Bitmap bmp){
@@ -435,7 +282,7 @@ public class Main3Activity extends AppCompatActivity {
 
         /*
         //Immitate
-        Mat conv = changeChannel(mat, 0, 0, 0, 31, 36, 39,200,200,212, false);
+        Mat conv = linearFunction(mat, 0, 0, 0, 31, 36, 39,200,200,212, false);
         Mat conv2 = contrast_brightness(conv, 1, 30f);
          */
 
@@ -445,6 +292,25 @@ public class Main3Activity extends AppCompatActivity {
         return bmp;
     }
 
+    /*
+        Helper functions
+     */
+
+    //apply nonlinear function to image
+    public Mat nonlinearFunction(Mat img, double[] red, double[] green, double[] blue){
+        for(int i = 0; i < img.rows(); i++){
+            for(int j = 0; j < img.cols(); j++){
+                double newRed = red[0] + red[1]*img.get(i,j)[0] + red[2]*img.get(i,j)[0]*img.get(i,j)[0] + red[3]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0] + red[4]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0]*img.get(i,j)[0];
+                double newGreen = green[0] + green[1]*img.get(i,j)[1] + green[2]*img.get(i,j)[1]*img.get(i,j)[1] + green[3]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1] + green[4]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1]*img.get(i,j)[1];
+                double newBlue = blue[0] + blue[1]*img.get(i,j)[2] + blue[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[3]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2] + blue[4]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2]*img.get(i,j)[2];
+                double[] all = {newRed, newGreen, newBlue};
+                img.put(i,j, all);
+            }
+        }
+        return img;
+    }
+
+    //alter contrast and/or brightness
     public static Mat contrast_brightness(Mat image, float a, float b) {
         Mat freshMat = new Mat();
         Mat freshMat2 = new Mat();
@@ -456,6 +322,7 @@ public class Main3Activity extends AppCompatActivity {
         return freshMat2;
     }
 
+    //alter hue and/or saturation
     public static Mat hue_saturation(Mat image, float a, float b) {
         Mat freshMat = new Mat();
         Imgproc.cvtColor(image, freshMat, Imgproc.COLOR_RGB2HSV);
@@ -470,57 +337,7 @@ public class Main3Activity extends AppCompatActivity {
         return freshMat;
     }
 
-    public static Mat apply_mask(Mat image, double[] mask, int weight, boolean invert) {
-        ArrayList<Mat> channels = new ArrayList<>(3);
-        Core.split(image, channels);
-        if(invert) {
-            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (255 / mask[0]));
-            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (255 / mask[1]));
-            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (255 / mask[2]));
-        }
-        else{
-            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (mask[0]/255));
-            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (mask[1]/255));
-            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (mask[2]/255));
-        }
-        Core.merge(channels, image);
-        return image;
-    }
-
-    public Mat hist(Mat img) {
-        List<Mat> bgrPlanes = new ArrayList<>();
-        Core.split(img, bgrPlanes);
-        int histSize = 256;
-        float[] range = {0, 256};
-        MatOfFloat histRange = new MatOfFloat(range);
-        boolean accumulate = false;
-        Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
-        int histW = 1024, histH = 800;
-        int binW = (int) Math.round((double) histW / histSize);
-        Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
-        Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
-        bHist.get(0, 0, bHistData);
-        float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
-        gHist.get(0, 0, gHistData);
-        float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
-        rHist.get(0, 0, rHistData);
-        for( int i = 1; i < histSize; i++ ) {
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2);
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 0), 2);
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 2);
-        }
-        return histImage;
-    }
-
+    //histogram equalisation algorithm
     public Mat equaliseHistManual(Mat img, double red_in, double green_in, double blue_in, double red_out, double green_out, double blue_out){
         double red_low_ratio = 128/(128-red_in);
         double red_high_ratio = 128/(red_out-128);
@@ -546,7 +363,8 @@ public class Main3Activity extends AppCompatActivity {
         return img;
     }
 
-    public Mat changeChannel(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_x, double g_p2_x, double b_p2_x, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
+    //applies linear function to image
+    public Mat linearFunction(Mat img, double r_p1_x, double g_p1_x, double b_p1_x, double r_p1_y, double g_p1_y, double b_p1_y, double r_p2_x, double g_p2_x, double b_p2_x, double r_p2_y, double g_p2_y, double b_p2_y, boolean flip){
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(img, channels);
 
@@ -644,118 +462,169 @@ public class Main3Activity extends AppCompatActivity {
         return img;
     }
 
-    public void save(){
-        File photoFile = new File(this.getExternalFilesDir(null), "/Image" + n + ".jpg");
+    
+    
+    /*
+        These functions are no longer in use
+     */
+    
+    //helper function to load images from external memory
+    private Bitmap getImage(String name){
+        String photoPath = this.getExternalFilesDir(null) + name + ".jpg";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bmp = BitmapFactory.decodeFile(photoPath, options);
+        if(bmp==null){
+            photoPath = this.getExternalFilesDir(null) + name + ".jpeg";
+            options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            bmp = BitmapFactory.decodeFile(photoPath, options);
+        }
+        return bmp;
+    }
+
+    //helper function to save image to external memory
+    public String saveImage(Bitmap photo, String name){
+        File photoFile = new File(this.getExternalFilesDir(null), name);
         try {
+            if (!photoFile.exists()) photoFile.createNewFile();
             FileOutputStream out = new FileOutputStream(photoFile);
-            Bitmap bitmap = currentBitmap;
+            Bitmap bitmap = photo.copy(photo.getConfig(), true);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
             out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e("ReadWriteFile", "Unable to write data.");
         }
-        n++;
+        return name;
     }
 
-    public void back() {
-        finish();
+    //produce histogram
+    public Mat hist(Mat img) {
+        List<Mat> bgrPlanes = new ArrayList<>();
+        Core.split(img, bgrPlanes);
+        int histSize = 256;
+        float[] range = {0, 256};
+        MatOfFloat histRange = new MatOfFloat(range);
+        boolean accumulate = false;
+        Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
+        Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
+        int histW = 1024, histH = 800;
+        int binW = (int) Math.round((double) histW / histSize);
+        Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+        Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
+        bHist.get(0, 0, bHistData);
+        float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
+        gHist.get(0, 0, gHistData);
+        float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
+        rHist.get(0, 0, rHistData);
+        for( int i = 1; i < histSize; i++ ) {
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 0, 0), 5);
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 0), 5);
+            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
+                    new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(0, 0, 255), 5);
+        }
+        return histImage;
     }
-/*
-    public Bitmap process(Bitmap inputImage) {
-        rgbKnots = sortPointsOnXAxis(rgbKnots);
-        redKnots = sortPointsOnXAxis(redKnots);
-        greenKnots = sortPointsOnXAxis(greenKnots);
-        blueKnots = sortPointsOnXAxis(blueKnots);
-        if (rgb == null) {
-            rgb = BezierSpline.curveGenerator(rgbKnots);
-        }
-
-        if (r == null) {
-            r = BezierSpline.curveGenerator(redKnots);
-        }
-
-        if (g == null) {
-            g = BezierSpline.curveGenerator(greenKnots);
-        }
-
-        if (b == null) {
-            b = BezierSpline.curveGenerator(blueKnots);
-        }
-        return ImageProcessor.applyCurves(rgb, r, g, b, inputImage);
-    }
-
-    public Point[] sortPointsOnXAxis(Point[] points) {
-        if (points == null) {
-            return null;
-        }
-        for (int s = 1; s < points.length - 1; s++) {
-            for (int k = 0; k <= points.length - 2; k++) {
-                if (points[k].x > points[k + 1].x) {
-                    float temp = 0;
-                    temp = points[k].x;
-                    points[k].x = points[k + 1].x; //swapping values
-                    points[k + 1].x = temp;
-                }
+    
+    //used to mass-reverse filters on training images
+    public void convertAll(){
+        for(int j = 1; j < 2; j++) {
+            for (int i = 1; i <= 50; i++) {
+                Bitmap bmp = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
+                Bitmap converted = removePerpetua(bmp);
+                if(j==1) converted = removeCrema(bmp);
+                if(j==2) converted = removeGingham(bmp);
+                if(j==3) converted = removeNashville(bmp);
+                if(j==4) converted = removeRise(bmp);
+                if(j==5) converted = removeClarendon(bmp);
+                saveImage(converted, "/Reversed/" + folder[j] +  folderName[j] + i + ".jpg");
+                Log.d("Reverse", folderName[j] + i);
             }
         }
-        return points;
     }
 
-    public static Mat interpolation(float[] curve, float[] originalValue) {
-        Mat lut = new Mat(1, 256, CvType.CV_8UC1);
-        for (int i = 0; i < 256; i++) {
-            int j = 0;
-            float a = i;
-            while (a > originalValue[j]) {
-                j++;
+    //apply vignette to image
+    public Mat vignette(Mat mat) {
+        Mat newMat = new Mat(mat.size(), mat.type(), new Scalar(0,0,0));
+        double maxDist = Math.sqrt(Math.pow((0 - newMat.cols() / 2), 2) + Math.pow((0 - newMat.rows() / 2), 2));
+        Point point = new Point(newMat.cols() / 2, newMat.rows() / 2);
+        for(int i = 0; i < maxDist; i+=2) {
+            double val = (60)-i*(60/maxDist);
+            Scalar colour = new Scalar(val, val, val);
+            for(int j = i; j < i+2; j++) {
+                Size size = new Size(maxDist - j, maxDist - j);
+                Imgproc.ellipse(newMat,
+                        point,
+                        size,
+                        0.0,
+                        0.0,
+                        360.0,
+                        colour,
+                        1,
+                        4,
+                        0);
             }
-            if (a == originalValue[j]) {
-                lut.put(1, i, curve[j]);
-                continue;
-            }
-            float slope = ((curve[j] - curve[j - 1])) / ((originalValue[j] - originalValue[j - 1]));
-            float constant = curve[j] - slope * originalValue[j];
-            lut.put(1, i, (slope * a + constant));
         }
-        return lut;
+        return newMat;
     }
 
-    public static Mat SimplestColorBalance(Mat img, int percent) {
-        if (percent <= 0)
-            percent = 5;
-        img.convertTo(img, CvType.CV_32F);
-        List<Mat> channels = new ArrayList<>();
-        int rows = img.rows(); // number of rows of image
-        int cols = img.cols(); // number of columns of image
-        int chnls = img.channels(); //  number of channels of image
-        double halfPercent = percent / 200.0;
-        if (chnls == 3) Core.split(img, channels);
-        else channels.add(img);
-        List<Mat> results = new ArrayList<>();
-        for (int i = 0; i < chnls; i++) {
-            // find the low and high precentile values (based on the input percentile)
-            Mat flat = new Mat();
-            channels.get(i).reshape(1, 1).copyTo(flat);
-            Core.sort(flat, flat, Core.SORT_ASCENDING);
-            double lowVal = flat.get(0, (int) Math.floor(flat.cols() * halfPercent))[0];
-            double topVal = flat.get(0, (int) Math.ceil(flat.cols() * (1.0 - halfPercent)))[0];
-            // saturate below the low percentile and above the high percentile
-            Mat channel = channels.get(i);
-            for (int m = 0; m < rows; m++) {
-                for (int n = 0; n < cols; n++) {
-                    if (channel.get(m, n)[0] < lowVal) channel.put(m, n, lowVal);
-                    if (channel.get(m, n)[0] > topVal) channel.put(m, n, topVal);
-                }
-            }
-            Core.normalize(channel, channel, 0.0, 255.0 / 2, Core.NORM_MINMAX);
-            channel.convertTo(channel, CvType.CV_32F);
-            results.add(channel);
-        }
-        Mat outval = new Mat();
-        Core.merge(results, outval);
-        return outval;
+    //apply OpenCVs histogram equalisation algorithm
+    public Mat equalize(Mat img, boolean red, boolean green, boolean blue){
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(img, channels);
+
+        if(red) Imgproc.equalizeHist( channels.get(0), channels.get(0) );
+        if(green) Imgproc.equalizeHist( channels.get(1), channels.get(1) );
+        if(blue) Imgproc.equalizeHist( channels.get(2), channels.get(2) );
+
+        Core.merge(channels, img);
+        return img;
     }
-    */
+
+    //display histogram from image on screen
+    public void showHist(){
+        for(int j = 0; j < folder.length; j++) {
+            for (int i = 1; i <= 100; i++) {
+                Bitmap bitmap = getImage("/Images/" + folder[j] +  folderName[j] + " (" + i + ")");
+                Mat mat = new Mat();
+                Utils.bitmapToMat(bitmap, mat);
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2HSV);
+
+                Mat hist = hist(mat);
+                Bitmap bmp = Bitmap.createBitmap(hist.cols(), hist.rows(), Bitmap.Config.RGB_565);
+                Utils.matToBitmap(hist, bmp);
+                currentBitmap = bmp;
+                saveImage(bmp, "/HSV Hists/" + folder[j] +  folderName[j] + i + ".jpg");
+                imageView.setImageBitmap(bmp);
+            }
+        }
+    }
+    
+    //place mask over image
+    public static Mat apply_mask(Mat image, double[] mask, int weight, boolean invert) {
+        ArrayList<Mat> channels = new ArrayList<>(3);
+        Core.split(image, channels);
+        if(invert) {
+            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (255 / mask[0]));
+            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (255 / mask[1]));
+            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (255 / mask[2]));
+        }
+        else{
+            channels.get(0).convertTo(channels.get(0), CvType.CV_8UC1, (mask[0]/255));
+            channels.get(1).convertTo(channels.get(1), CvType.CV_8UC1, (mask[1]/255));
+            channels.get(2).convertTo(channels.get(2), CvType.CV_8UC1, (mask[2]/255));
+        }
+        Core.merge(channels, image);
+        return image;
+    }
 }
 

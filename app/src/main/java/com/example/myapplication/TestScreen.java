@@ -15,6 +15,9 @@ import org.opencv.core.Mat;
 import java.lang.StringBuilder;
 import android.text.method.ScrollingMovementMethod;
 
+/*
+    Screen to check for TP,FP,FN,FP
+ */
 public class TestScreen extends AppCompatActivity {
 
     static final String[] photoTypes = {"Gingham/ging", "Nashville/nash", "Clarendon/clar", "Rise/rise", "Crema/crem", "Perpetua/perp", "Plain/un"};
@@ -179,6 +182,7 @@ public class TestScreen extends AppCompatActivity {
     }
 
     private boolean checkPerpetua(HistData data){
+        /*
         boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[2] < 25;
         boolean rgb_start = data.HistDataRgb[0][0] < 600 && data.HistDataRgb[1][0] < 1;
         boolean rgb_end = data.HistDataRgb[2][255] < 600;
@@ -186,10 +190,14 @@ public class TestScreen extends AppCompatActivity {
         boolean hsv_popIn = data.in_hsv[0] > 5 && data.in_hsv[0] < 65 && data.in_hsv[1] < 25 && data.in_hsv[2] < 25;
         boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 200;
         boolean hsv_vals = data.r_val_hsv[0] < 150 && data.g_val_hsv[9] < 60 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 50 && data.b_val_hsv[7] < 100;
-        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_popIn && hsv_start && hsv_vals;
+         */
+        return data.in_rgb[1] > 5 && Math.round(data.HistDataRgb[2][255]) < 100 && Math.round(data.HistDataRgb[0][0]) < 5 && Math.round(data.HistDataRgb[1][0]) < 5 && Math.round(data.HistDataRgb[2][0]) < 300
+                && data.in_hsv[0] > 5 && data.in_hsv[1] < 10 && Math.round(data.HistDataHsv[0][0]) == 0 &&  Math.round(data.HistDataHsv[1][0]) < 150
+                && data.g_val_hsv[8] < 50 && data.g_val_hsv[9] < 40 && data.b_val_hsv[7] < 40 && data.b_val_hsv[6] < 45 && data.b_val_hsv[5] < 35;
     }
 
     private boolean checkCrema(HistData data){
+        /*
         boolean rgb_start = data.HistDataRgb[0][0] < 500 && data.HistDataRgb[1][0] < 5;
         boolean rgb_end = data.HistDataRgb[0][255] < 700 && data.HistDataRgb[1][255] < 10 && data.HistDataRgb[2][255] < 10;
         boolean rgb_val = data.b_val_rgb[9] < 150;
@@ -197,10 +205,13 @@ public class TestScreen extends AppCompatActivity {
         boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500;
         boolean hsv_end = data.HistDataHsv[0][255] < 700;
         boolean hsv_val = data.r_val_hsv[0] < 200 & data.g_val_hsv[9] < 150;
-        return rgb_start && rgb_end && rgb_val && hsv_start && hsv_end && hsv_val;
+         */
+        return data.g_val_hsv[9] <= 30 && data.g_val_hsv[8] <= 30 && data.g_val_hsv[7] < 100 && Math.round(data.HistDataHsv[0][0]) < 5 && Math.round(data.HistDataHsv[1][0]) < 400 && Math.round(data.HistDataHsv[0][255]) < 100 && Math.round(data.HistDataHsv[1][255]) < 100
+                && Math.round(data.HistDataRgb[1][255]) < 50 && Math.round(data.HistDataRgb[2][255]) <= 1;
     }
 
     private boolean checkRise(HistData data){
+        /*
         boolean rgb_popIn = data.in_rgb[1] > 5 && data.in_rgb[2] < 50;
         boolean rgb_start = data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 400;
         boolean rgb_end = data.HistDataRgb[2][255] < 200;
@@ -209,17 +220,23 @@ public class TestScreen extends AppCompatActivity {
         boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500;
         boolean hsv_end = data.HistDataHsv[1][255] < 300;
         boolean hsv_val = data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 100;
-        return rgb_popIn && rgb_start && rgb_end && rgb_val && hsv_in && hsv_start && hsv_end && hsv_val;
+         */
+        return Math.round(data.HistDataHsv[0][0]) < 5 && Math.round(data.HistDataHsv[1][0]) < 200 && Math.round(data.HistDataHsv[1][255]) < 50 && data.r_val_hsv[0] < 10 && data.in_hsv[0] > 5 && data.g_val_hsv[8] < 40 && data.g_val_hsv[9] <= 5
+                && Math.round(data.HistDataRgb[0][0]) <= 0 && Math.round(data.HistDataRgb[2][0]) < 50;
     }
 
     private boolean checkClarendon(HistData data){
+        /*
         boolean rgb_start = data.HistDataRgb[1][0] < 200;
         boolean hsv_start = data.HistDataHsv[0][0] < 10;
         boolean hsv_vals = data.b_val_hsv[5] < 150 & data.b_val_hsv[6] < 400 && data.b_val_hsv[7] < 150;
-        return rgb_start && hsv_start && hsv_vals;
+         */
+        return Math.round(data.HistDataRgb[0][255]) < 120 && Math.round(data.HistDataRgb[1][0]) < 100
+                && Math.round(data.HistDataHsv[0][0]) < 100 && data.b_val_hsv[5] < 50 && data.b_val_hsv[6] < 40 && data.b_val_hsv[7] < 25;
     }
 
     private boolean checkNashville(HistData data){
+        /*
         boolean rgb_start = data.HistDataRgb[2][0] < 50;
         boolean rgb_end = data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 5;
         boolean rgb_vals = data.b_val_rgb[0] < 15 && data.b_val_rgb[1] < 100 && data.b_val_rgb[8] < 250 && data.b_val_rgb[9] < 15;
@@ -228,9 +245,12 @@ public class TestScreen extends AppCompatActivity {
         boolean hsv_out = data.out_hsv[0] > 150;
         boolean hsv_start = data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 310 && data.HistDataHsv[2][0] < 500;
         return rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_in && hsv_out && hsv_start;
+         */
+        return data.b_val_rgb[0] < 10 && data.b_val_rgb[1] < 30 && data.b_val_rgb[9] < 10;
     }
 
     private boolean checkGingham(HistData data){
+        /*
         boolean rgb_popIn = data.in_rgb[1] > 15;
         boolean hsv_popIn = data.in_hsv[0] > 20;
         boolean hsv_popOut = data.out_hsv[0] > 90 && data.out_hsv[1] > 40 && data.out_hsv[2] > 70;
@@ -241,7 +261,8 @@ public class TestScreen extends AppCompatActivity {
         boolean rgb_end = data.HistDataRgb[0][255] < 80 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1;
         boolean rgb_vals = data.r_val_rgb[0] < 20 && data.r_val_rgb[1] < 250 && data.r_val_rgb[9] < 80 && data.g_val_rgb[0] < 5 && data.g_val_rgb[1] < 250 && data.g_val_rgb[9] < 10 && data.b_val_rgb[0] < 50 && data.b_val_rgb[1] < 250 && data.b_val_rgb[9] < 10;
         boolean hsv_vals = data.r_val_hsv[0] < 5 && data.r_val_hsv[1] < 200 && data.r_val_hsv[9] < 50 && data.g_val_hsv[8] < 15 && data.g_val_hsv[9] < 5;
-        return rgb_popIn && rgb_popOut && rgb_start && rgb_end && rgb_vals && hsv_vals && hsv_popIn && hsv_popOut && hsv_start && hsv_end;
+         */
+        return data.r_val_rgb[0] <= 5 && data.r_val_rgb[9] <= 5 && data.g_val_rgb[0] <= 5 && data.g_val_rgb[9] <= 5 && data.b_val_rgb[0] <= 5 && data.b_val_rgb[9] <= 35 && data.out_rgb[0] <= 235 && data.out_rgb[2] <= 235 && data.out_rgb[1] <= 235 && data.in_rgb[0] >= 15 && data.in_rgb[1] >= 15 && data.in_rgb[2] >= 15;
     }
 
     private Bitmap getImage(int val, String photoType) {

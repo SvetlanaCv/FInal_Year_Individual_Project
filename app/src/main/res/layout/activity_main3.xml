@@ -21,7 +21,7 @@
         android:id="@+id/orig"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/button_pressed"
         android:text="Original"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toTopOf="@id/scroll"
@@ -52,7 +52,7 @@
                 android:id="@+id/clar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Clarendon" />
 
@@ -60,7 +60,7 @@
                 android:id="@+id/nash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Nashville" />
 
@@ -68,7 +68,7 @@
                 android:id="@+id/ging"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Gingham" />
 
@@ -76,7 +76,7 @@
                 android:id="@+id/crem"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Crema" />
 
@@ -84,7 +84,7 @@
                 android:id="@+id/rise"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Rise" />
 
@@ -92,7 +92,7 @@
                 android:id="@+id/perp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/button_pressed"
                 android:textColor="#FFFFFF"
                 android:text="Perpetua" />
 

@@ -20,11 +20,12 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+/*
+    Screen to test histogram comparison and trait detection
+ */
 public class HistTestScreen extends AppCompatActivity {
-
     String[] folder = {"Perpetua/", "Crema/", "Gingham/", "Nashville/", "Rise/", "Clarendon/", "Plain/"};
     String[] folderName = {"perp", "crem", "ging", "nash", "rise", "clar", "un"};
-
 
     StringBuilder sb;
     TextView resultData;
@@ -52,22 +53,24 @@ public class HistTestScreen extends AppCompatActivity {
                 Utils.bitmapToMat(bmp, mat);
                 HistData data = new HistData(mat);
                 double[] hist_results = checkHists(data);
-                double[] filter_results = {checkPerpetua(data, hist_results[0]), checkCrema(data, hist_results[1]), checkGingham(data, hist_results[2]), checkNashville(data, hist_results[3]), checkRise(data, hist_results[4]), checkClarendon(data, hist_results[5])};
+                int weighting = 0;
+                double[] filter_results = {checkPerpetua(data, hist_results[0],weighting), checkCrema(data, hist_results[1],weighting), checkGingham(data, hist_results[2],weighting), checkNashville(data, hist_results[3],weighting), checkRise(data, hist_results[4],weighting), checkClarendon(data, hist_results[5],weighting), checkPlain(data, hist_results[6], weighting)};
 
-                for(int j = 0; j < 6; j++) total_results[j] += filter_results[j];
-                total_results[6] += hist_results[6]/6;
+                for(int j = 0; j < filter_results.length; j++) total_results[j] += filter_results[j];
 
                 for(int j = 0; j < 6; j++) hist_results[j] /= 6;
                 write(folderName[t] + " " + i + ": " + hist_results[0] + " " + hist_results[1] + " " +
                         hist_results[2] + " " + hist_results[3] + " " + hist_results[4] + " " + hist_results[5] + " " +
-                            hist_results[6] + "\n", "/HistTest.txt");
+                        hist_results[6] + "\n", "/HistTest.txt");
                 write(folderName[t] + " " + i + ": " + filter_results[0] + " " + filter_results[1] + " " +
                         filter_results[2] + " " + filter_results[3] + " " + filter_results[4] + " " + filter_results[5] +
-                            "\n", "/AllTest.txt");
+                        "\n", "/AllTest.txt");
+                Log.d("HistTestResults", folderName[t] + " " + i);
             }
             for(int r = 0; r < total_results.length; r++) {
                 total_results[r] /= 20;
                 sb.append(folderName[r] + " " + total_results[r] + "\n");
+                Log.d("HistTestResults", folderName[r] + " " + total_results[r]);
             }
             sb.append("\n");
         }
@@ -130,81 +133,103 @@ public class HistTestScreen extends AppCompatActivity {
         return count;
     }
 
-    private double checkPerpetua(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 8;
-        if (data.in_rgb[1] > 5 && data.in_rgb[0] < 35 && data.in_rgb[1] < 35 && data.in_rgb[2] < 25) count++;
-        if (data.HistDataRgb[0][0] < 5 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 300) count++;
-        if (data.HistDataRgb[2][255] < 60) count++;
-        if (data.g_val_rgb[0] < 200 && data.b_val_rgb[9] < 400) count++;
-        if (data.in_hsv[0] > 5 && data.in_hsv[0] < 45 && data.in_hsv[1] < 25 && data.in_hsv[2] < 20) count++;
-        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 150) count++;
-        if (data.HistDataHsv[1][255] < 300 && data.HistDataHsv[2][255] < 1) count++;
-        if (data.g_val_hsv[9] < 30 && data.b_val_hsv[5] < 25 && data.b_val_hsv[6] < 10 && data.b_val_hsv[7] < 15) count++;
+    private double checkPlain(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 6;
+        if(checkGingham(data, 0, 0) == 0) count++;
+        if(checkPerpetua(data,0,0) == 0) count++;
+        if(checkCrema(data,0,0) == 0) count++;
+        if(checkRise(data,0,0) == 0) count++;
+        if(checkClarendon(data,0,0) == 0) count++;
+        if(checkNashville(data,0,0) == 0) count++;
         return count/total;
     }
 
-    private double checkCrema(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 8;
-        if (data.out_rgb[2] <= 250) count++;
-        if (data.HistDataRgb[0][0] < 20 && data.HistDataRgb[1][0] < 5 && data.HistDataRgb[2][0] < 250) count++;
-        if (data.HistDataRgb[0][255] < 15 && data.HistDataRgb[1][255] < 5 && data.HistDataRgb[2][255] < 1) count++;
-        if (data.b_val_rgb[9] < 80) count++;
-        if (data.HistDataHsv[0][0] < 1 && data.HistDataHsv[1][0] < 500 && data.HistDataHsv[2][0] < 700) count++;
-        if (data.HistDataHsv[0][255] < 10 && data.HistDataHsv[1][255] < 250) count++;
-        if (data.g_val_hsv[9] < 150 && data.b_val_hsv[2] < 200) count++;
+    private double checkPerpetua(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 13;
+        if(data.in_rgb[1] > 5) count++;
+        if(Math.round(data.HistDataRgb[2][255]) < 100) count++;
+        if(Math.round(data.HistDataRgb[0][0]) < 5) count++;
+        if(Math.round(data.HistDataRgb[1][0]) < 5) count++;
+        if(Math.round(data.HistDataRgb[2][0]) < 300) count++;
+        if(data.in_hsv[0] > 5 && data.in_hsv[1] < 10) count++;
+        if(Math.round(data.HistDataHsv[0][0]) == 0) count++;
+        if(Math.round(data.HistDataHsv[1][0]) < 150) count++;
+        if(data.g_val_hsv[8] < 50) count++;
+        if(data.g_val_hsv[9] < 40) count++;
+        if(data.b_val_hsv[7] < 40) count++;
+        if(data.b_val_hsv[6] < 45) count++;
+        if(data.b_val_hsv[5] < 35) count++;
         return count/total;
     }
 
-    private double checkGingham(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 8;
-        if (data.in_rgb[0] > 20 && data.in_rgb[1] > 25 && data.in_rgb[2] > 10) count++;
-        if (data.in_hsv[0] > 30) count++;
-        if (data.out_hsv[2] > 125 && data.out_hsv[0] < 250 && data.out_hsv[1] < 230) count++;
-        if (data.HistDataHsv[0][255] < 1 && data.HistDataHsv[1][255] < 1 && data.HistDataHsv[2][255] < 1 && data.HistDataHsv[0][0] < 1) count++;
-        if (data.out_rgb[0] < 250 && data.out_rgb[1] < 230) count++;
-        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 1) count++;
-        if (data.HistDataRgb[0][255] < 1 && data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 1) count++;
-        if (data.r_val_rgb[0] < 5 && data.r_val_rgb[9] < 10 && data.g_val_rgb[0] < 5 && data.g_val_rgb[9] < 5 && data.b_val_rgb[0] < 5 && data.b_val_rgb[9] < 5)  count++;
+    private double checkCrema(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 9;
+        if(data.g_val_hsv[9] <= 30) count++;
+        if(data.g_val_hsv[8] <= 30) count++;
+        if(data.g_val_hsv[7] < 100) count++;
+        if(Math.round(data.HistDataHsv[0][0]) < 5) count++;
+        if(Math.round(data.HistDataHsv[1][0]) < 400) count++;
+        if(Math.round(data.HistDataHsv[0][255]) < 100) count++;
+        if(Math.round(data.HistDataHsv[1][255]) < 100) count++;
+        if(Math.round(data.HistDataRgb[1][255]) < 50) count++;
+        if(Math.round(data.HistDataRgb[2][255]) <= 1) count++;
         return count/total;
     }
 
-    private double checkNashville(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 6;
-        if (data.in_rgb[0] < 10) count++;
-        if (data.out_rgb[1] < 250) count++;
-        if (data.HistDataRgb[2][0] < 1) count++;
-        if (data.HistDataRgb[1][255] < 1 && data.HistDataRgb[2][255] < 5) count++;
-        if (data.b_val_rgb[0] < 5 && data.b_val_rgb[1] < 20 && data.b_val_rgb[9] < 5) count++;
-        if (data.b_val_hsv[2] < 200) count++;
+    private double checkGingham(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 12;
+        if(data.r_val_rgb[0] <= 5) count++;
+        if(data.r_val_rgb[9] <= 5) count++;
+        if(data.g_val_rgb[0] <= 5) count++;
+        if(data.g_val_rgb[9] <= 5) count++;
+        if(data.b_val_rgb[0] <= 5) count++;
+        if(data.b_val_rgb[9] <= 35) count++;
+        if(data.out_rgb[0] <= 235) count++;
+        if(data.out_rgb[2] <= 235) count++;
+        if(data.out_rgb[1] <= 235) count++;
+        if(data.in_rgb[0] >= 15) count++;
+        if(data.in_rgb[1] >= 15) count++;
+        if(data.in_rgb[2] >= 15) count++;
         return count/total;
     }
 
-    private double checkRise(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 8;
-        if (data.in_rgb[0] > 5 && data.in_rgb[1] > 5) count++;
-        if (data.HistDataRgb[0][0] < 1 && data.HistDataRgb[1][0] < 1 && data.HistDataRgb[2][0] < 15) count++;
-        if (data.HistDataRgb[2][255] < 50) count++;
-        if (data.g_val_rgb[0] < 140 && data.b_val_rgb[0] < 50) count++;
-        if (data.in_hsv[0] > 10 && data.in_hsv[2] == 0) count++;
-        if (data.HistDataHsv[0][0] < 1) count++;
-        if (data.HistDataHsv[1][255] < 10 && data.HistDataHsv[2][255] < 1) count++;
-        if (data.r_val_hsv[0] < 5 && data.g_val_hsv[9] < 400) count++;
+    private double checkNashville(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 3;
+        if(data.b_val_rgb[0] < 10) count++;
+        if(data.b_val_rgb[1] < 30) count++;
+        if(data.b_val_rgb[9] < 10) count++;
         return count/total;
     }
 
-    private double checkClarendon(HistData data, double hist) {
-        double count = hist;
-        double total = 6 + 5;
-        if (data.HistDataRgb[1][0] < 200) count++;
-        if (data.HistDataRgb[0][255] < 600) count++;
-        if (data.out_hsv[0] > 220 && data.out_hsv[1] > 200) count++;
-        if (data.HistDataHsv[0][0] < 1) count++;
-        if (data.b_val_hsv[5] < 100 & data.b_val_hsv[6] < 200 && data.b_val_hsv[7] < 100) count++;
+    private double checkRise(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 9;
+        if(Math.round(data.HistDataHsv[0][0]) < 5) count++;
+        if(Math.round(data.HistDataHsv[1][0]) < 200) count++;
+        if(Math.round(data.HistDataHsv[1][255]) < 50) count++;
+        if(data.r_val_hsv[0] < 10) count++;
+        if(data.in_hsv[0] > 5) count++;
+        if(data.g_val_hsv[8] < 40) count++;
+        if(data.g_val_hsv[9] <= 5) count++;
+        if(Math.round(data.HistDataRgb[0][0]) <= 0) count++;
+        if(Math.round(data.HistDataRgb[2][0]) < 50) count++;
+        return count/total;
+    }
+
+    private double checkClarendon(HistData data, double hist, int weighting) {
+        double count = hist*weighting;
+        double total = 6*weighting + 6;
+        if(Math.round(data.HistDataRgb[0][255]) < 120) count++;
+        if(Math.round(data.HistDataRgb[1][0]) < 100) count++;
+        if(Math.round(data.HistDataHsv[0][0]) < 100) count++;
+        if(data.b_val_hsv[5] < 50) count++;
+        if(data.b_val_hsv[6] < 40) count++;
+        if(data.b_val_hsv[7] < 25) count++;
         return count/total;
     }
 

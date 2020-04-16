@@ -1,66 +1,32 @@
 package com.example.myapplication;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 
-import android.graphics.Color;
 import android.graphics.ImageDecoder;
-import android.media.Image;
 import android.net.Uri;
 
-import org.opencv.android.Utils;
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.imgproc.Imgproc;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.View.OnTouchListener;
-import android.view.SurfaceView;
 import android.widget.Button;
-import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 import android.provider.MediaStore;
-import android.widget.ImageView;
-import android.graphics.drawable.BitmapDrawable;
 import android.content.Context;
 import java.io.ByteArrayOutputStream;
-import android.provider.MediaStore.Images;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Vector;
-import java.lang.Object;
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import android.os.Environment;
-import android.widget.TextView;
 
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
+/*
+    Starting screen
+ */
 public class MainActivity extends AppCompatActivity implements Serializable {
 
     private static final String TAG = "MainActivity";
@@ -107,19 +73,13 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         });
 
         /*
+        //these buttons lead to testing screens not shown in the final product
+
         analysis = findViewById(R.id.analysis);
         analysis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 analysisScreen();
-            }
-        });
-
-        histTest = findViewById(R.id.histTest);
-        histTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                histTestScreen();
             }
         });
 
@@ -138,10 +98,19 @@ public class MainActivity extends AppCompatActivity implements Serializable {
                 comparisonScreen();
             }
         });
-
+        histTest = findViewById(R.id.histTest);
+        histTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                histTestScreen();
+            }
+        });
          */
     }
 
+    /*
+        Lead to testing screens
+     */
     private void comparisonScreen(){
         Intent i = new Intent(this, ComparisonScreen.class);
         startActivity(i);
@@ -162,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements Serializable {
         startActivity(i);
     }
 
+    //open image gallery for selection
     private void openGallery(int num) {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, num);

@@ -42,7 +42,7 @@
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/button_pressed"
         android:textSize="30dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,11 +8,12 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import android.graphics.Bitmap;
-import org.opencv.android.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
+
+/*
+    Helper class to convert images into histograms and extract data
+*/
 
 public class HistData {
 

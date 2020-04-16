@@ -18,12 +18,14 @@ import java.lang.StringBuilder;
 
 import android.media.MediaScannerConnection;
 
+/*
+    Screen to analyse all training images and print results
+*/
 public class AnalysisScreen extends AppCompatActivity {
 
     TextView text;
 
     static final String[] photoTypes = {"ging", "nash", "clar", "rise", "crem", "perp", "un"};
-    static final String photoType = "nash";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
